@@ -1,4 +1,0 @@
-interface:
-  display_name: "Init Project Memory"
-  short_description: "Agent-facing project memory docs"
-  default_prompt: "Use $init-project-memory to initialize agent-facing project memory docs for this project."

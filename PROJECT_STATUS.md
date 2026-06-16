@@ -74,6 +74,7 @@ Documentation planning note:
 
 Implemented skill source in the repository:
 - Path: `skills/init-project-memory`
+- Current path after rename: `skills/project-memory`
 - Purpose: initialize and maintain lightweight, agent-facing project memory docs for coding projects.
 - Product boundary: developer-triggered, agent-assisted workflows; no automatic background maintenance.
 
@@ -176,6 +177,18 @@ New conclusion:
 - Existing `AGENTS.md` content should be classified and migrated into the project memory docs when the developer approves.
 - Keep only always-on operating rules in `AGENTS.md`; move detailed project context, environment, repository, decisions, logs, and domain notes into `docs/`.
 - A snippet file is useful as a conservative non-overwrite fallback, but the preferred confirmed workflow is an `AGENTS.md` refactor/merge with old content redistributed to source-of-truth docs.
+
+## 2026-06-16 Skill rename
+
+Decision:
+- Renamed the skill from `init-project-memory` to `project-memory`.
+
+Rationale:
+- The skill now covers initialization, diagnosis, context-budget warnings, compaction planning, Vibe Coding readiness, and AGENTS.md migration planning.
+- The old name over-emphasized initialization and no longer represented the full lifecycle.
+
+Current path:
+- `skills/project-memory`
 
 ## 2026-06-16 Vibe readiness and AGENTS migration implementation
 

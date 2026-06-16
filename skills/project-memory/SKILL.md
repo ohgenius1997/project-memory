@@ -1,9 +1,9 @@
 ---
-name: init-project-memory
-description: Initialize and maintain lightweight, agent-facing project memory docs for coding projects. Use when the user asks to initialize project documentation, project memory, context recovery docs, agent runbooks, project principles, progress logs, environment notes, repository rules, coordination docs, handoff notes, documentation diagnosis, context-budget compaction planning, or cross-device/project-state sync checks for software, skill, app, data, CAD, or agent projects.
+name: project-memory
+description: Initialize, diagnose, migrate, compact-plan, and maintain lightweight agent-facing project memory docs for coding projects. Use when the user asks to initialize project documentation, manage project memory, recover context, create agent runbooks, record project principles, progress logs, environment notes, repository rules, coordination docs, handoff notes, Vibe Coding readiness checks, AGENTS.md migration plans, context-budget compaction planning, or cross-device/project-state sync checks for software, skill, app, data, CAD, or agent projects.
 ---
 
-# Init Project Memory
+# Project Memory
 
 ## Core Contract
 

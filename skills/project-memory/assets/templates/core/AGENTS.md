@@ -58,9 +58,9 @@
 - Update `docs/VIBE_READINESS.md` when product goal, stack/runtime, conventions, core contracts, red lines, or AI permission boundaries change.
 
 ## Context Budget Warnings
-- If `AGENTS.md` exceeds 140 lines, recommend `$init-project-memory migrate-agents`.
-- If `PROJECT_STATUS.md` exceeds 150 lines, recommend `$init-project-memory compact`.
-- If `docs/LOG.md` exceeds 500 lines, recommend `$init-project-memory compact`.
+- If `AGENTS.md` exceeds 140 lines, recommend `$project-memory migrate-agents`.
+- If `PROJECT_STATUS.md` exceeds 150 lines, recommend `$project-memory compact`.
+- If `docs/LOG.md` exceeds 500 lines, recommend `$project-memory compact`.
 - If any memory doc mixes current state with stale history, recommend diagnosis or compaction.
 - Do not compact, archive, or delete content without developer confirmation.
 

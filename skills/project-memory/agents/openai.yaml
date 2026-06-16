@@ -1,0 +1,4 @@
+interface:
+  display_name: "Project Memory"
+  short_description: "Agent-facing project memory docs"
+  default_prompt: "Use $project-memory to initialize or diagnose agent-facing project memory docs for this project."
