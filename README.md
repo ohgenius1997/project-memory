@@ -62,7 +62,7 @@ python3 skills/project-memory/scripts/init_docs.py \
   --domain "agent-facing project memory"
 ```
 
-If the target already contains `conductor/`, initialization stops by default to avoid duplicate static context systems. Rerun with `--allow-conductor` only after choosing the source-of-truth split.
+If the target already contains `conductor/`, initialization stops by default to avoid duplicate static context systems. `project-memory` treats `conductor/` as an external context directory and does not parse, migrate, or synchronize it by default. Rerun with `--allow-conductor` only after explicitly choosing to proceed.
 
 Inspect an existing repository before initialization:
 
@@ -128,7 +128,7 @@ Risky changes such as compaction, archival, deletion, or `AGENTS.md` rewrites sh
 
 - Use `project-memory` for stable project governance: current status, principles, plans, durable decisions, environment, repository, coordination, and AI permission boundaries.
 - Use projectmem, when installed, for dynamic events: issues, attempts, fixes, file-level gotchas, and precheck hints.
-- Treat `conductor/` from context-driven-development as an alternate static context system. Do not keep overlapping facts in both `conductor/` and `docs/` unless you record a source-of-truth split.
+- Treat `conductor/` from context-driven-development as an external static context directory and conflict signal. Do not parse, migrate, or synchronize Conductor-specific files by default.
 
 For most projects, commit generated project-memory docs to git so context travels across devices and sessions. Do not commit secrets, private customer details, or machine-specific credentials.
 

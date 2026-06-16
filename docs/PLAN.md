@@ -24,8 +24,9 @@
 - Use MIT license for broad reuse.
 - Keep helper scripts dependency-light and runnable with Python standard library.
 - Treat projectmem as an optional dynamic event layer.
-- Treat context-driven-development/Conductor as an alternate static context system, not a default companion.
+- Treat `conductor/` as an external static context directory and conflict signal, not a compatibility or migration target.
 - Keep feature tracks optional and lightweight; they are an index for larger work units, not a replacement for `PROJECT_STATUS.md` or `docs/PLAN.md`.
+- Define migration as Existing Context Migration: classify useful historical context from `AGENTS.md`, README, old docs, TODOs, roadmaps, changelogs, handoff notes, or user-specified files into project-memory docs.
 
 ## Assumptions
 - Initial public users will copy or install the skill manually rather than via a package manager.
@@ -34,15 +35,17 @@
 ## Open Questions
 - Whether to add examples or screenshots after more dogfooding.
 - Whether projectmem CLI support needs a stable adapter after observing real-world usage.
+- Absolute path of the new `PDY_2` project for real-project dogfood.
 
 ## Risks
 - The public repository may imply stable API guarantees before the skill has real external usage.
+- Dogfood findings from `PDY_2` may require writable access outside the current repository.
 
 ## Current Approach
 - Keep the repository small and focused.
 - Treat `README.md` as the public entrypoint.
 - Treat `PROJECT_STATUS.md` and `docs/` as agent-facing project memory.
-- Implement improvements in phases: rules first, diagnosis/brief next, optional tracks and read-only bridges now.
+- Implement improvements in phases: rules first, diagnosis/brief next, optional tracks and read-only bridges, then real-project dogfood and generic migration.
 
 ## Milestones
 - [x] Build `project-memory` skill.
@@ -56,7 +59,9 @@
 - [x] Add optional tracks addon and context gate diagnostics.
 - [x] Add read-only projectmem bridge.
 - [x] Add brownfield inspect light mode.
-- [ ] Validate, sync local installed skill, commit, and push current iteration.
+- [x] Validate, sync local installed skill, commit, and push current iteration.
+- [ ] Phase 7: dogfood on `PDY_2` or another real project.
+- [ ] Phase 8: implement generic Existing Context Migration improvements; do not adapt Conductor.
 
 ## In Scope
 - Skill templates and scripts.
@@ -65,6 +70,7 @@
 - Read-only brief, diagnosis, interop routing, and source-of-truth checks.
 - Optional feature-track templates for larger work units.
 - Read-only dynamic-memory bridge and existing-project inspection.
+- Generic existing-context migration design and diagnostics.
 - Public README, license, and repository hygiene.
 
 ## Out Of Scope
@@ -72,8 +78,9 @@
 - Package registry release.
 - Automatic background document maintenance.
 - MCP server, daemon, watcher, git hooks, or automatic projectmem writes.
+- Conductor compatibility, Conductor parsing, Conductor migration, or Conductor synchronization.
 
 ## Next Actions
-- Run full validation for the current iteration.
-- Sync local installed skill after validation.
-- Commit and push.
+- Get the absolute path for `PDY_2`.
+- Run read-only dogfood inspection on `PDY_2`.
+- Use findings to refine generic existing-context migration.

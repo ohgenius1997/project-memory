@@ -27,7 +27,8 @@
 - Keep maintenance actions developer-triggered.
 - Use read-only planning for diagnosis, compaction, and AGENTS migration.
 - Keep projectmem integration optional and advisory.
-- Detect Conductor/context-driven-development as an alternate static context system; prefer migration or explicit source-of-truth ownership over default coexistence.
+- Detect `conductor/` as an external static context directory and conflict signal; do not parse, migrate, synchronize, or adapt Conductor-specific files.
+- Treat migration as generic Existing Context Migration from `AGENTS.md`, README, old docs, TODOs, roadmaps, changelogs, handoff notes, or developer-specified files into project-memory docs.
 - Keep projectmem bridge commands read-only and best-effort so the skill does not hard-depend on a specific projectmem CLI version.
 - Keep tracks optional for larger work units only; avoid creating a parallel project plan for small tasks.
 
@@ -48,9 +49,10 @@
 - Consult projectmem-style dynamic memory through a read-only bridge.
 - Generate a context-budget compaction plan.
 - Plan an AGENTS.md migration.
+- Plan generic existing-context migration for brownfield projects.
 - Check Vibe Coding readiness.
 - Prepare handoff or coordination docs.
-- Detect projectmem or Conductor overlap and recommend safe routing.
+- Detect projectmem or external static context overlap and recommend safe routing.
 - Stop initialization on `conductor/` by default unless `--allow-conductor` is explicitly used.
 
 ## Core Workflows

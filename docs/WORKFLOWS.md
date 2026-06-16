@@ -22,19 +22,20 @@
 - Use dynamic memory bridge
 - Generate compaction plan
 - Plan AGENTS.md migration
+- Plan existing-context migration
 - Prepare public repository release
 
 ## Inspect Existing Project
 1. Run `scripts/inspect_project.py --target <project>`.
 2. Use detected languages, config files, existing memory systems, and recommended addons as input.
-3. Confirm source-of-truth ownership before initializing if `conductor/`, existing docs, or long `AGENTS.md` already exist.
+3. Confirm before initializing if external static context directories such as `conductor/`, existing docs, or long `AGENTS.md` already exist.
 4. Do not treat inspection output as a full architecture analysis.
 
 ## Generate Project Memory Brief
 1. Run `scripts/brief_memory.py --target <project>`.
 2. Use the recommended read set instead of loading all docs.
 3. If projectmem is detected, use summaries/precheck rather than raw logs.
-4. If Conductor is detected, confirm static context ownership before editing overlapping docs.
+4. If `conductor/` is detected, treat it as an external static context directory and do not parse or migrate it by default.
 
 ## Initialize Project Memory
 1. Run `scripts/init_docs.py` with project name, kind, domain, and addons.
@@ -45,7 +46,7 @@
 ## Diagnose Project Memory
 1. Run `scripts/diagnose_memory.py --target <project>`.
 2. Report findings before applying changes.
-3. Check for context-budget issues, stale setup/repository notes, projectmem routing, and Conductor source-of-truth conflicts.
+3. Check for context-budget issues, stale setup/repository notes, projectmem routing, and external static context conflicts.
 4. Recommend compact or migrate-agents when budgets are exceeded.
 5. Patch only routine, clear updates unless the developer confirms larger changes.
 
@@ -72,6 +73,12 @@
 2. Present keep/move/review classifications.
 3. Ask for developer confirmation before rewriting `AGENTS.md`.
 4. After migration, run diagnosis and log the migration.
+
+## Plan Existing-Context Migration
+1. Identify useful historical context sources: `AGENTS.md`, README, old docs, TODOs, roadmaps, changelogs, handoff notes, and developer-specified files.
+2. Classify content into project-memory targets: `AGENTS.md`, `PROJECT_STATUS.md`, `docs/PLAN.md`, `docs/DECISIONS.md`, `docs/ENVIRONMENT.md`, `docs/REPOSITORY.md`, `docs/COORDINATION.md`, `docs/LOG.md`, and `docs/DOMAIN.md` when present.
+3. Present a read-only migration plan before applying patches.
+4. Do not special-case `conductor/`; it is an external static context conflict signal, not a supported migration format.
 
 ## Prepare Public Repository Release
 1. Confirm README, license, ignore rules, and project status are public-safe.

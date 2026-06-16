@@ -42,7 +42,7 @@ Use the smallest read set that can safely answer the task:
 - Need business/domain terms or user mental model: add `docs/DOMAIN.md` if present
 - Need historical reasoning: read `docs/LOG.md` selectively
 - Project has `.projectmem/`: treat projectmem as dynamic event memory; use summaries/precheck results, not raw event logs
-- Project has `conductor/`: treat it as an alternate static context system; do not create duplicate project-memory docs without confirming source-of-truth ownership
+- Project has `conductor/`: treat it as an external static context system and conflict signal; do not parse, migrate, or maintain Conductor-specific files
 - Diagnose or compact project memory: read all memory docs, then report findings before patching
 
 ## Workflows
@@ -55,7 +55,7 @@ Use `scripts/brief_memory.py --target /path/to/project` at the start of a sessio
 
 Use `scripts/inspect_project.py --target /path/to/project` before initializing memory for an existing codebase or when the user gives only a broad project description. It is read-only and reports detected languages, config files, candidate commands, existing memory systems, and recommended addons.
 
-Use inspection as input, not as truth. Confirm ambiguous ownership choices with the developer, especially when `conductor/`, existing docs, or long `AGENTS.md` files already exist.
+Use inspection as input, not as truth. Confirm ambiguous ownership choices with the developer, especially when existing docs, long `AGENTS.md` files, or external static context directories such as `conductor/` already exist.
 
 ### Initialize
 
@@ -77,7 +77,7 @@ Do not create domain-specific addons such as `billing`, `medical`, or `inventory
 
 Always include core docs. Add only relevant addons; do not generate comprehensive docs for hypothetical future needs.
 
-If a target already contains `conductor/`, `init_docs.py` stops by default. Ask the developer whether to keep Conductor as the static context source, migrate to project-memory, or explicitly mix both with a source-of-truth table. Use `--allow-conductor` only after that decision.
+If a target already contains `conductor/`, `init_docs.py` stops by default. This is conflict protection only. Do not parse, migrate, or adapt Conductor files. Continue with `--allow-conductor` only if the developer explicitly chooses to proceed with project-memory despite the external static context directory.
 
 ### Resume
 
@@ -93,7 +93,7 @@ python3 scripts/memory_bridge.py summary --target /path/to/project
 python3 scripts/memory_bridge.py precheck path/to/file --target /path/to/project
 ```
 
-If `conductor/` exists, read its index and relevant artifacts only after confirming whether Conductor or project-memory owns the static project context.
+If `conductor/` exists, do not treat it as project-memory input. Ask the developer whether to continue despite the external static context directory.
 
 ### Checkpoint
 
@@ -124,7 +124,7 @@ If `AGENTS.md` exceeds its context budget, recommend `migrate-agents` instead of
 
 If `.projectmem/` exists but the routing rules do not mention projectmem, recommend documenting the split: project-memory owns stable governance, projectmem owns dynamic events and precheck hints.
 
-If both `conductor/` and project-memory docs exist, warn about static-context source-of-truth conflicts unless an explicit ownership table says which system owns product, technical, workflow, and work-unit facts.
+If both `conductor/` and project-memory docs exist, warn that another static context system is present. project-memory does not parse, migrate, or synchronize `conductor/`.
 
 ### Vibe Readiness
 
@@ -148,7 +148,7 @@ Before broad implementation, large refactors, or work on a new feature track, ve
 - Relevant durable decisions have been read from `docs/DECISIONS.md`
 - Environment and repository rules are current when tooling, dependencies, CI, release, or branches are involved
 - If `.projectmem/` exists, recent failures and precheck results have been considered
-- If `conductor/` exists, static-context source-of-truth ownership is explicit
+- If `conductor/` exists, the developer has explicitly chosen to proceed despite an external static context directory
 
 Context Gate produces warnings and update recommendations. It should not block the developer's request by itself.
 
@@ -182,16 +182,16 @@ Use projectmem as an optional dynamic event layer, not a replacement for project
 - At session end, use recent projectmem events to check whether `PROJECT_STATUS.md` is stale; summarize only durable current state, not every event
 - Do not hand-edit projectmem raw event logs
 
-### Conductor Detection
+### External Static Context Detection
 
-Treat `conductor/` from context-driven-development as an alternate static context system, not a default companion layer.
+Treat `conductor/` from context-driven-development as an external static context directory and conflict signal, not a compatibility target or default companion layer.
 
 When `conductor/` exists:
 
 1. Do not generate overlapping project-memory docs by default.
-2. Ask whether to keep Conductor, migrate to project-memory, or explicitly mix them.
-3. If mixing, record a source-of-truth table in `AGENTS.md` or project docs before continuing.
-4. Prefer migration plans over automatic rewrites.
+2. Do not parse, migrate, synchronize, or adapt Conductor-specific files.
+3. Ask whether the developer wants to proceed with project-memory despite the existing external static context directory.
+4. If proceeding, keep migration logic generic: existing `AGENTS.md`, README, old docs, roadmaps, changelogs, and user-specified notes can be classified into project-memory docs.
 
 ### Compact
 
@@ -233,6 +233,24 @@ The script is read-only. It produces a migration plan with:
 - Needs review: ambiguous or high-risk content
 
 After developer confirmation, the agent may apply patches according to the plan, then run diagnosis. The preferred final state is a short `AGENTS.md` plus detailed source-of-truth docs. Snippet files are only a fallback when the developer does not allow editing the existing `AGENTS.md`.
+
+### Existing Context Migration
+
+Use existing-context migration for brownfield projects that already have useful project context in `AGENTS.md`, README, old docs, TODO files, roadmaps, changelogs, handoff notes, or developer-specified documents.
+
+The migration target is the project-memory source-of-truth set:
+
+- always-on operating rules: `AGENTS.md`
+- current state: `PROJECT_STATUS.md`
+- current plan: `docs/PLAN.md`
+- durable decisions: `docs/DECISIONS.md`
+- environment/setup facts: `docs/ENVIRONMENT.md`
+- repository/release facts: `docs/REPOSITORY.md`
+- coordination/handoff facts: `docs/COORDINATION.md`
+- chronological history: `docs/LOG.md`
+- domain terms: `docs/DOMAIN.md` when present
+
+This is an open-ended classification workflow, not compatibility with any specific third-party context framework. Do not special-case Conductor beyond detecting the directory and warning about potential static-context overlap.
 
 ## Safety Rules
 

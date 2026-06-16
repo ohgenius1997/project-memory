@@ -30,3 +30,7 @@
 - Continued the next iteration: added optional `tracks` addon templates, `diagnose_memory.py --context-gate`, read-only `memory_bridge.py`, and read-only `inspect_project.py`.
 - Updated skill instructions, generated AGENTS template, README, CI smoke checks, and dogfood docs for the new workflows.
 - Synced the updated skill into the local Codex skills directory and validated the installed copy.
+- Began Phase 7/8 planning. Accepted `PDY_2` as the intended real-project dogfood target, but local search did not find a `PDY_2` path yet.
+- Clarified Phase 8 migration boundary: Existing Context Migration is generic brownfield context classification, not Conductor compatibility or Conductor migration.
+- Updated skill instructions, generated AGENTS template, README, scripts, and maintenance policy to treat `conductor/` as an external static context conflict signal only.
+- Validated the scope cleanup with script syntax checks, official skill validation, context-gate diagnosis, whitespace checks, and conductor guard smoke.

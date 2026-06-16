@@ -528,17 +528,21 @@ def diagnose(target: Path, *, context_gate: bool = False) -> list[Finding]:
             ]
         ).lower()
         has_project_memory_docs = (target / "PROJECT_STATUS.md").exists() or (target / "docs").exists()
-        has_ownership = "conductor" in routing_text and (
-            "source of truth" in routing_text or "source-of-truth" in routing_text
+        has_boundary = "conductor" in routing_text and (
+            "external static context" in routing_text
+            or "conflict signal" in routing_text
+            or "do not parse" in routing_text
+            or "source of truth" in routing_text
+            or "source-of-truth" in routing_text
         )
-        if has_project_memory_docs and not has_ownership:
+        if has_project_memory_docs and not has_boundary:
             add(
                 findings,
                 "warning",
                 "static-context-source-conflict",
                 "conductor",
-                "Both `conductor/` and project-memory docs exist without explicit source-of-truth ownership.",
-                "Choose Conductor, project-memory, or a documented split before maintaining overlapping static context.",
+                "Both `conductor/` and project-memory docs exist without an explicit external-context boundary.",
+                "Document that `conductor/` is an external static context directory and project-memory does not parse, migrate, or synchronize it by default.",
             )
 
     porcelain = git_lines(target, ["status", "--short"])

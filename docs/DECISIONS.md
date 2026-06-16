@@ -20,8 +20,9 @@
 - 2026-06-16 - Add Vibe readiness gate
 - 2026-06-16 - Use MIT license for open source release
 - 2026-06-16 - Keep projectmem optional and advisory
-- 2026-06-16 - Treat Conductor as alternate static context
+- 2026-06-16 - Treat conductor as external context signal
 - 2026-06-16 - Add optional tracks and read-only helper adapters
+- 2026-06-16 - Define migration as generic Existing Context Migration
 
 ## Decision Log
 
@@ -56,13 +57,19 @@
 - Rationale: projectmem is useful as a dynamic event layer, while `project-memory` should remain a lightweight Codex skill.
 - Consequences: projectmem warnings can influence plans and testing, but they cannot be the sole reason to refuse a user request.
 
-### 2026-06-16 - Treat Conductor as alternate static context
-- Decision: `conductor/` from context-driven-development is an alternate static context system, not a default companion layer.
-- Rationale: Conductor and project-memory both own static project context, so default coexistence risks duplicate facts.
-- Consequences: detection should prompt migration, read-only compatibility, or explicit source-of-truth ownership.
+### 2026-06-16 - Treat conductor as external context signal
+- Decision: `conductor/` from context-driven-development is an external static context directory and conflict signal, not a compatibility target or default companion layer.
+- Rationale: Conductor-style files and project-memory docs can both describe static project context, so silently maintaining both risks duplicate or conflicting facts.
+- Consequences: detection should stop default initialization and warn about an external static context directory. project-memory does not parse, migrate, or synchronize Conductor-specific files.
 
 ### 2026-06-16 - Add optional tracks and read-only helper adapters
 - Decision: Add optional `tracks` templates, Context Gate diagnostics, `inspect_project.py`, and read-only `memory_bridge.py`.
 - Rationale: These features borrow the useful parts of richer context systems without making project-memory a daemon, MCP server, or runtime dependency.
 - Consequences: The skill can guide larger and existing projects better while preserving the core safety model: diagnose and suggest first, patch only after clear intent or confirmation.
 - Alternatives considered: make projectmem/Conductor hard dependencies; rejected because that would narrow usage and increase maintenance risk.
+
+### 2026-06-16 - Define migration as generic Existing Context Migration
+- Decision: Migration means classifying useful historical project context from `AGENTS.md`, README, old docs, TODOs, roadmaps, changelogs, handoff notes, or developer-specified files into project-memory docs.
+- Rationale: A generic migration model serves ordinary brownfield projects without coupling project-memory to any third-party context framework.
+- Consequences: `conductor/` remains a conflict signal only. It is not a compatibility target, migration source format, or synchronization partner.
+- Alternatives considered: adapt context-driven-development/Conductor outputs directly; rejected because the project intentionally borrows ideas without inheriting another system's file semantics.

@@ -257,7 +257,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--allow-conductor",
         action="store_true",
-        help="Allow initialization when conductor/ exists. Use only after confirming source-of-truth ownership.",
+        help="Allow initialization when conductor/ exists. Use only after explicitly choosing to proceed despite an external static context directory.",
     )
     parser.add_argument(
         "--list-addons",
@@ -281,8 +281,9 @@ def main() -> int:
     target = Path(args.target).expanduser().resolve()
     if (target / "conductor").exists() and not args.allow_conductor:
         print(
-            "Target contains conductor/. Confirm static context ownership before "
-            "creating overlapping project-memory docs, or rerun with --allow-conductor.",
+            "Target contains conductor/. project-memory treats this as an external "
+            "static context directory and does not parse or migrate it by default. "
+            "Rerun with --allow-conductor only after explicitly choosing to proceed.",
             file=sys.stderr,
         )
         return 2

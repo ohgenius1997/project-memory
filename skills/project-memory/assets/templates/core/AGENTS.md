@@ -54,14 +54,14 @@
 ## External Memory Modes
 - If `.projectmem/` exists, treat projectmem as dynamic event memory for issues, attempts, fixes, file-level gotchas, and precheck hints. Do not read or edit raw event logs unless explicitly asked.
 - Prefer `memory_bridge.py detect|summary|precheck` when the project-memory skill scripts are available.
-- If `conductor/` exists, treat it as an alternate static context system. Do not duplicate product, technical, workflow, or work-unit facts across `conductor/` and `docs/` without an explicit source-of-truth decision.
+- If `conductor/` exists, treat it as an external static context directory and conflict signal. Do not parse, migrate, or synchronize Conductor-specific files by default.
 - Precheck warnings are risk inputs, not refusal criteria. Use them to adjust the plan and explain mitigation.
 
 ## Context Gate
 - Before broad implementation, large refactors, or new feature work, check `docs/VIBE_READINESS.md`, `PROJECT_STATUS.md`, and relevant decisions.
 - Prefer `diagnose_memory.py --context-gate` when the project-memory skill scripts are available.
 - If `.projectmem/` exists, use recent events or precheck output to verify the current plan is not repeating known failures.
-- If `conductor/` exists, confirm which static context system owns the facts needed for the task.
+- If `conductor/` exists, confirm whether to proceed with project-memory despite the external static context directory.
 
 ## Update Triggers
 - Update `PROJECT_STATUS.md` after meaningful progress, blockers, or next-step changes.

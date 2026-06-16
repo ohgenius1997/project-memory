@@ -18,12 +18,12 @@
 - Project: `project-memory`
 - Kind: Codex skill
 - Domain: agent-facing project memory management
-- Current phase: tracks/context-gate/bridge/inspect iteration implemented
+- Current phase: Phase 7/8 boundary cleanup and dogfood setup
 - Current branch: `main`
-- Latest conclusion: next-step improvements should stay low-complexity: optional tracks, stricter diagnostics, read-only dynamic-memory bridge, and brownfield inspection.
-- Next step: monitor GitHub Actions after push and dogfood tracks/context-gate/bridge/inspect workflows in a real project.
-- Blockers: none
-- Active risks: projectmem bridge is best-effort across possible CLI variants and must remain advisory/read-only.
+- Latest conclusion: Phase 8 migration means generic Existing Context Migration, not Conductor compatibility. `conductor/` remains only an external static context conflict signal.
+- Next step: get the absolute path for `PDY_2`, then run read-only dogfood inspection and refine migration behavior from findings.
+- Blockers: `PDY_2` was not found under searched local paths.
+- Active risks: dogfood may require writable access outside the current repository; migration wording must not imply Conductor parsing, migration, or synchronization.
 
 ## Changed Since Last Checkpoint
 - Initialized project memory docs for this repository.
@@ -37,6 +37,8 @@
 - Added optional tracks addon templates, `diagnose_memory.py --context-gate`, read-only `memory_bridge.py`, and read-only `inspect_project.py`.
 - Extended README, skill instructions, templates, and CI smoke coverage for the new workflows.
 - Validated repository source and installed skill copy with script syntax checks, smoke tests, and official skill validation.
+- Began Phase 7/8: accepted `PDY_2` as the intended real-project dogfood target and clarified migration scope as generic existing-context migration.
+- Searched common local paths for `PDY_2`; it was not found yet.
 
 ## Read Next
 - Continue implementation: `docs/PRINCIPLES.md`, `docs/PLAN.md`
@@ -48,6 +50,6 @@
 
 ## Handoff
 - Last completed: tracks/context-gate/bridge/inspect implementation, validation, local install sync, commit, and push.
-- In progress: none
-- Validation done: `py_compile`, init smoke with tracks, brief, diagnosis with `--context-gate`, inspect, memory bridge detect/summary/precheck fallback, conductor guard, official `quick_validate.py` for repo and installed skill.
-- Known risks: new bridge command compatibility is best-effort because projectmem CLI shapes may vary.
+- In progress: waiting for `PDY_2` absolute path for real dogfood.
+- Validation done: current scope cleanup passed `py_compile`, official `quick_validate.py`, `diagnose_memory.py --context-gate`, whitespace check, and conductor guard smoke.
+- Known risks: new bridge command compatibility is best-effort because projectmem CLI shapes may vary; `PDY_2` may be outside writable roots.

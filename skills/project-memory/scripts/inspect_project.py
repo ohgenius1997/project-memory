@@ -190,7 +190,7 @@ def inspect(target: Path) -> dict[str, object]:
     repository_doc = read_text(target / "docs" / "REPOSITORY.md").lower()
     if existing_memory["conductor"] and not existing_memory["project_memory"]:
         recommendations.append(
-            "Target contains conductor/. Confirm whether to keep Conductor as the static context source before initializing project-memory."
+            "Target contains conductor/. Treat it as an external static context directory; project-memory does not parse or migrate it by default."
         )
     if not existing_memory["project_memory"]:
         recommendations.append("Initialize project-memory core docs, then fill current status and Vibe readiness.")

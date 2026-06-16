@@ -97,7 +97,7 @@ def external_memory(target: Path) -> list[str]:
             )
     if (target / "conductor").exists():
         notes.append(
-            "conductor detected: confirm whether Conductor or project-memory owns static context before editing overlapping docs"
+            "conductor detected: external static context directory present; project-memory does not parse or migrate it by default"
         )
     return notes
 
