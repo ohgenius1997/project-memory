@@ -71,5 +71,5 @@
 ### 2026-06-16 - Define migration as generic Existing Context Migration
 - Decision: Migration means classifying useful historical project context from `AGENTS.md`, README, old docs, TODOs, roadmaps, changelogs, handoff notes, or developer-specified files into project-memory docs.
 - Rationale: A generic migration model serves ordinary brownfield projects without coupling project-memory to any third-party context framework.
-- Consequences: `conductor/` remains a conflict signal only. It is not a compatibility target, migration source format, or synchronization partner.
+- Consequences: `conductor/` remains a conflict signal only. It is not a compatibility target, migration source format, or synchronization partner. The read-only `migrate_context.py` planner implements this as advisory classification, not automatic rewriting.
 - Alternatives considered: adapt context-driven-development/Conductor outputs directly; rejected because the project intentionally borrows ideas without inheriting another system's file semantics.

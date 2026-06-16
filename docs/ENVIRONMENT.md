@@ -34,6 +34,7 @@
 - Run context gate: `python3 skills/project-memory/scripts/diagnose_memory.py --target . --context-gate`
 - Inspect project shape: `python3 skills/project-memory/scripts/inspect_project.py --target .`
 - Detect dynamic memory bridge state: `python3 skills/project-memory/scripts/memory_bridge.py detect --target .`
+- Plan existing-context migration: `python3 skills/project-memory/scripts/migrate_context.py --target .`
 - Validate skill when PyYAML is available: `python3 /path/to/quick_validate.py skills/project-memory`
 
 ## Machine-Specific Notes

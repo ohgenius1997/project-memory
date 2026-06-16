@@ -42,6 +42,24 @@ DEFAULT_BUDGETS = {
     "docs/COORDINATION.md": 220,
 }
 
+OPTIONAL_PROJECT_MEMORY_FILES = {
+    "docs/API.md",
+    "docs/APP_SPEC.md",
+    "docs/BUILD_RUNBOOK.md",
+    "docs/CLI_RUNBOOK.md",
+    "docs/CLOUD_RUNBOOK.md",
+    "docs/DATA.md",
+    "docs/DESIGN_SYSTEM.md",
+    "docs/DOCS_SPEC.md",
+    "docs/DOMAIN.md",
+    "docs/EVALUATION.md",
+    "docs/LIBRARY_SPEC.md",
+    "docs/SYSTEM_ARCHITECTURE.md",
+    "docs/TRACKS.md",
+    "docs/USER_FLOWS.md",
+    "docs/WORKFLOWS.md",
+}
+
 DEPENDENCY_AND_SETUP_FILES = [
     "package.json",
     "package-lock.json",
@@ -127,8 +145,34 @@ def memory_files(target: Path) -> list[Path]:
             files.append(path)
     docs = target / "docs"
     if docs.exists():
-        files.extend(path for path in sorted(docs.glob("*.md")) if path.is_file())
+        for path in sorted(docs.glob("*.md")):
+            if not path.is_file():
+                continue
+            relative = str(path.relative_to(target))
+            text = read(path)
+            if (
+                relative in CORE_FILES
+                or relative in OPTIONAL_PROJECT_MEMORY_FILES
+                or "Memory Metadata" in text
+                or "Maintenance Rules" in text
+            ):
+                files.append(path)
     return files
+
+
+def legacy_context_files(target: Path) -> list[str]:
+    docs = target / "docs"
+    if not docs.exists():
+        return []
+    memory = {relative_to_target(path, target) for path in memory_files(target)}
+    legacy: list[str] = []
+    for path in sorted(docs.glob("*.md")):
+        if not path.is_file():
+            continue
+        relative = relative_to_target(path, target)
+        if relative not in memory:
+            legacy.append(relative)
+    return legacy
 
 
 def relative_to_target(path: Path, target: Path) -> str:
@@ -251,6 +295,18 @@ def diagnose(target: Path, *, context_gate: bool = False) -> list[Finding]:
                 "Core project memory file is missing.",
                 "Run init_docs.py or restore the file from templates.",
             )
+
+    legacy_docs = legacy_context_files(target)
+    if legacy_docs:
+        add(
+            findings,
+            "info",
+            "legacy-context-docs-detected",
+            "docs",
+            f"Found {len(legacy_docs)} existing Markdown doc(s) that are not project-memory docs.",
+            "Treat them as Existing Context Migration sources instead of adding Memory Metadata to every legacy file: "
+            + ", ".join(legacy_docs[:6]),
+        )
 
     for path in memory_files(target):
         relative = relative_to_target(path, target)

@@ -35,11 +35,11 @@
 ## Open Questions
 - Whether to add examples or screenshots after more dogfooding.
 - Whether projectmem CLI support needs a stable adapter after observing real-world usage.
-- Absolute path of the new `PDY_2` project for real-project dogfood.
+- Whether `migrate_context.py` should eventually produce patch-ready drafts after more dogfooding.
 
 ## Risks
 - The public repository may imply stable API guarantees before the skill has real external usage.
-- Dogfood findings from `PDY_2` may require writable access outside the current repository.
+- Existing-context migration classification is heuristic and must remain advisory until more real projects are tested.
 
 ## Current Approach
 - Keep the repository small and focused.
@@ -60,8 +60,9 @@
 - [x] Add read-only projectmem bridge.
 - [x] Add brownfield inspect light mode.
 - [x] Validate, sync local installed skill, commit, and push current iteration.
-- [ ] Phase 7: dogfood on `PDY_2` or another real project.
-- [ ] Phase 8: implement generic Existing Context Migration improvements; do not adapt Conductor.
+- [x] Phase 7: dogfood on `PDY_2` or another real project.
+- [x] Phase 8: implement generic Existing Context Migration improvements; do not adapt Conductor.
+- [ ] Validate, sync local installed skill, commit, and push Phase 7/8 dogfood fixes.
 
 ## In Scope
 - Skill templates and scripts.
@@ -81,6 +82,6 @@
 - Conductor compatibility, Conductor parsing, Conductor migration, or Conductor synchronization.
 
 ## Next Actions
-- Get the absolute path for `PDY_2`.
-- Run read-only dogfood inspection on `PDY_2`.
-- Use findings to refine generic existing-context migration.
+- Run full validation for dogfood fixes.
+- Sync local installed skill.
+- Commit and push.

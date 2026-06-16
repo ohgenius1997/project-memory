@@ -238,6 +238,12 @@ After developer confirmation, the agent may apply patches according to the plan,
 
 Use existing-context migration for brownfield projects that already have useful project context in `AGENTS.md`, README, old docs, TODO files, roadmaps, changelogs, handoff notes, or developer-specified documents.
 
+When available, start with the read-only planner:
+
+```bash
+python3 scripts/migrate_context.py --target /path/to/project
+```
+
 The migration target is the project-memory source-of-truth set:
 
 - always-on operating rules: `AGENTS.md`
@@ -276,4 +282,5 @@ This is an open-ended classification workflow, not compatibility with any specif
 - `scripts/memory_bridge.py`: read-only optional dynamic memory bridge for projectmem-style systems.
 - `scripts/compact_memory.py`: read-only compaction strategy generator.
 - `scripts/migrate_agents.py`: read-only AGENTS.md migration planner.
+- `scripts/migrate_context.py`: read-only existing-context migration planner.
 - `references/maintenance-policy.md`: detailed maintenance and compaction policy.

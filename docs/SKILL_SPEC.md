@@ -64,6 +64,7 @@
 - Dynamic memory bridge: `scripts/memory_bridge.py`
 - Compact plan: `scripts/compact_memory.py`
 - AGENTS migration plan: `scripts/migrate_agents.py`
+- Existing context migration plan: `scripts/migrate_context.py`
 
 ## Bundled Resources
 - `scripts/`: helper CLIs.
@@ -75,3 +76,4 @@
 - Official skill validator when `PyYAML` is available.
 - Temporary project generation tests for key addon combinations.
 - Smoke tests for brief, diagnosis, context gate, project inspection, and memory bridge detection.
+- Brownfield dogfood checks against `PDY_2` for legacy docs and existing-context migration behavior.

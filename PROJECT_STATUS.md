@@ -18,12 +18,12 @@
 - Project: `project-memory`
 - Kind: Codex skill
 - Domain: agent-facing project memory management
-- Current phase: Phase 7/8 boundary cleanup and dogfood setup
+- Current phase: Phase 7/8 PDY_2 dogfood fixes validated
 - Current branch: `main`
-- Latest conclusion: Phase 8 migration means generic Existing Context Migration, not Conductor compatibility. `conductor/` remains only an external static context conflict signal.
-- Next step: get the absolute path for `PDY_2`, then run read-only dogfood inspection and refine migration behavior from findings.
-- Blockers: `PDY_2` was not found under searched local paths.
-- Active risks: dogfood may require writable access outside the current repository; migration wording must not imply Conductor parsing, migration, or synchronization.
+- Latest conclusion: PDY_2 dogfood confirmed the key brownfield case: legacy docs should be classified as Existing Context Migration sources, not treated as malformed project-memory docs.
+- Next step: push the Phase 7/8 dogfood fixes.
+- Blockers: none
+- Active risks: `migrate_context.py` uses heuristic classification; output should remain advisory and developer-confirmed.
 
 ## Changed Since Last Checkpoint
 - Initialized project memory docs for this repository.
@@ -39,6 +39,10 @@
 - Validated repository source and installed skill copy with script syntax checks, smoke tests, and official skill validation.
 - Began Phase 7/8: accepted `PDY_2` as the intended real-project dogfood target and clarified migration scope as generic existing-context migration.
 - Searched common local paths for `PDY_2`; it was not found yet.
+- Found `PDY_2` at `/Users/bytedance/.codex/worktrees/8211/PDY_2` and ran read-only dogfood checks.
+- Updated diagnosis to treat old docs as legacy context sources instead of warning per old doc.
+- Updated inspection to detect legacy context sources, detached HEAD, Xcode project names, and tracks addon cues.
+- Added read-only `migrate_context.py` for generic existing-context migration plans.
 
 ## Read Next
 - Continue implementation: `docs/PRINCIPLES.md`, `docs/PLAN.md`
@@ -50,6 +54,6 @@
 
 ## Handoff
 - Last completed: tracks/context-gate/bridge/inspect implementation, validation, local install sync, commit, and push.
-- In progress: waiting for `PDY_2` absolute path for real dogfood.
-- Validation done: current scope cleanup passed `py_compile`, official `quick_validate.py`, `diagnose_memory.py --context-gate`, whitespace check, and conductor guard smoke.
-- Known risks: new bridge command compatibility is best-effort because projectmem CLI shapes may vary; `PDY_2` may be outside writable roots.
+- In progress: push dogfood fixes.
+- Validation done: `py_compile`, official `quick_validate.py`, fresh init smoke, smoke `brief_memory.py`, `diagnose_memory.py --context-gate`, `inspect_project.py`, `memory_bridge.py detect`, `migrate_context.py`; PDY_2 read-only `inspect_project.py`, `diagnose_memory.py --context-gate`, `migrate_agents.py`, `migrate_context.py`; whitespace check.
+- Known risks: new bridge command compatibility is best-effort because projectmem CLI shapes may vary; migration classification is heuristic.

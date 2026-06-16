@@ -286,13 +286,26 @@ def score(text: str, keywords: list[str]) -> int:
 def classify(chunk: str) -> MigrationItem:
     cleaned = " ".join(chunk.split())
     excerpt = cleaned[:180] + ("..." if len(cleaned) > 180 else "")
-    first_line = chunk.splitlines()[0].strip().lower() if chunk.splitlines() else ""
+    lines = chunk.splitlines()
+    first_line = lines[0].strip().lower() if lines else ""
 
     if first_line in KEEP_HEADINGS:
         return MigrationItem(
             "keep",
             "AGENTS.md",
             "Standard AGENTS.md router section.",
+            excerpt,
+        )
+
+    if (
+        first_line.startswith("#")
+        and len(lines) <= AGENTS_BUDGET
+        and any(marker in first_line for marker in ["agent", "codex", "instruction", "instructions"])
+    ):
+        return MigrationItem(
+            "keep",
+            "AGENTS.md",
+            "Short agent operating instruction block should remain always-on context.",
             excerpt,
         )
 

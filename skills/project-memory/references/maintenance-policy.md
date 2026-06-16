@@ -89,6 +89,8 @@ Snippet files are a fallback only when the developer does not allow modifying ex
 
 Existing-context migration is for brownfield projects with useful context scattered across `AGENTS.md`, README, old docs, TODO files, roadmaps, changelogs, handoff notes, or developer-specified files.
 
+Start with `scripts/migrate_context.py --target <project>` when available. It is read-only and classifies legacy sources into suggested project-memory targets.
+
 Migration should classify facts by project-memory ownership:
 - Always-on operating rules: `AGENTS.md`
 - Current state: `PROJECT_STATUS.md`

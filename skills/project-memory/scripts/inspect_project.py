@@ -32,6 +32,20 @@ INTERESTING_FILES = [
     "docker-compose.yml",
 ]
 
+PROJECT_MEMORY_FILES = {
+    "AGENTS.md",
+    "PROJECT_STATUS.md",
+    "docs/CONTEXT.md",
+    "docs/PRINCIPLES.md",
+    "docs/PLAN.md",
+    "docs/VIBE_READINESS.md",
+    "docs/DECISIONS.md",
+    "docs/ENVIRONMENT.md",
+    "docs/REPOSITORY.md",
+    "docs/LOG.md",
+    "docs/COORDINATION.md",
+}
+
 
 def read_json(path: Path) -> dict[str, Any]:
     try:
@@ -80,6 +94,35 @@ def files_matching(target: Path, patterns: list[str]) -> list[str]:
     for pattern in patterns:
         result.extend(str(path.relative_to(target)) for path in target.glob(pattern) if path.is_file())
     return sorted(set(result))
+
+
+def legacy_context_sources(target: Path) -> list[str]:
+    sources: list[str] = []
+    for relative in ["AGENTS.md", "README.md", "TODO.md", "ROADMAP.md", "CHANGELOG.md"]:
+        path = target / relative
+        text = read_text(path)
+        if (
+            path.exists()
+            and not (
+                relative == "AGENTS.md"
+                and ("Memory Metadata" in text or "Maintenance Rules" in text)
+            )
+        ):
+            sources.append(relative)
+    docs = target / "docs"
+    if docs.exists():
+        for path in sorted(docs.glob("*.md")):
+            if not path.is_file():
+                continue
+            relative = str(path.relative_to(target))
+            text = read_text(path)
+            if (
+                relative not in PROJECT_MEMORY_FILES
+                and "Memory Metadata" not in text
+                and "Maintenance Rules" not in text
+            ):
+                sources.append(relative)
+    return sorted(set(sources))
 
 
 def detect_languages(target: Path) -> list[str]:
@@ -149,6 +192,8 @@ def recommended_addons(target: Path, languages: list[str]) -> list[str]:
         addons.add("cli")
     if (target / "Dockerfile").exists() or (target / ".github" / "workflows").exists():
         addons.add("cloud")
+    if any((target / relative).exists() for relative in ["docs/HANDOFF.md", "docs/ROADMAP.md"]):
+        addons.add("tracks")
     if not addons:
         addons.add("system")
     return sorted(addons)
@@ -170,19 +215,34 @@ def project_name(target: Path) -> str:
     project = pyproject.get("project", {}) if isinstance(pyproject, dict) else {}
     if isinstance(project, dict) and isinstance(project.get("name"), str):
         return project["name"]
+    xcode_projects = sorted(target.glob("*.xcodeproj"))
+    if len(xcode_projects) == 1:
+        return xcode_projects[0].stem
     return target.name
+
+
+def branch_name(target: Path) -> str | None:
+    branch = "\n".join(git_lines(target, ["branch", "--show-current"]))
+    if branch:
+        return branch
+    commit = "\n".join(git_lines(target, ["rev-parse", "--short", "HEAD"]))
+    if commit:
+        return f"detached:{commit}"
+    return None
 
 
 def inspect(target: Path) -> dict[str, object]:
     languages = detect_languages(target)
     interesting = [file for file in INTERESTING_FILES if (target / file).exists()]
     workflows = files_matching(target, [".github/workflows/*.yml", ".github/workflows/*.yaml"])
+    legacy_sources = legacy_context_sources(target)
     scripts = {
         "package_json": package_scripts(target),
         "pyproject": python_scripts(target),
     }
     existing_memory = {
         "project_memory": (target / "PROJECT_STATUS.md").exists() or (target / "docs" / "PLAN.md").exists(),
+        "legacy_context": bool(legacy_sources),
         "projectmem": (target / ".projectmem").exists(),
         "conductor": (target / "conductor").exists(),
     }
@@ -194,6 +254,8 @@ def inspect(target: Path) -> dict[str, object]:
         )
     if not existing_memory["project_memory"]:
         recommendations.append("Initialize project-memory core docs, then fill current status and Vibe readiness.")
+    if legacy_sources:
+        recommendations.append("Plan Existing Context Migration for legacy docs before copying details into project-memory files.")
     if workflows and not any(marker in repository_doc for marker in ["ci:", "github actions", "workflow"]):
         recommendations.append("Record CI and release rules in docs/REPOSITORY.md.")
     if languages:
@@ -203,12 +265,13 @@ def inspect(target: Path) -> dict[str, object]:
         "target": str(target),
         "project_name": project_name(target),
         "git": {
-            "branch": "\n".join(git_lines(target, ["branch", "--show-current"])) or None,
+            "branch": branch_name(target),
             "remotes": git_lines(target, ["remote", "-v"]),
         },
         "languages": languages,
         "interesting_files": interesting,
         "workflows": workflows,
+        "legacy_context_sources": legacy_sources,
         "scripts": scripts,
         "existing_memory": existing_memory,
         "recommended_addons": recommended_addons(target, languages),
@@ -229,6 +292,7 @@ def print_markdown(result: dict[str, object]) -> None:
         ("Languages", "languages"),
         ("Interesting Files", "interesting_files"),
         ("GitHub Workflows", "workflows"),
+        ("Legacy Context Sources", "legacy_context_sources"),
         ("Recommended Addons", "recommended_addons"),
     ]:
         values = result[key]

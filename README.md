@@ -16,6 +16,7 @@ It helps long-running AI-assisted coding projects preserve the context that futu
 - Read-only bridge for projectmem-style dynamic memory
 - Read-only compaction plans
 - Read-only `AGENTS.md` migration plans
+- Read-only existing-context migration plans for brownfield projects
 - Optional projectmem/conductor detection rules
 - Source-of-truth conventions for project docs
 
@@ -35,6 +36,7 @@ skills/project-memory/
     memory_bridge.py
     compact_memory.py
     migrate_agents.py
+    migrate_context.py
 ```
 
 The root `docs/` directory is this repository's own project memory, used to dogfood the skill.
@@ -109,6 +111,12 @@ Generate a read-only `AGENTS.md` migration plan:
 python3 skills/project-memory/scripts/migrate_agents.py --target /path/to/project
 ```
 
+Generate a read-only existing-context migration plan for brownfield docs:
+
+```bash
+python3 skills/project-memory/scripts/migrate_context.py --target /path/to/project
+```
+
 ## Safety Model
 
 The helper scripts are intentionally conservative:
@@ -119,6 +127,7 @@ The helper scripts are intentionally conservative:
 - `memory_bridge.py` is read-only and treats external memory output as advisory.
 - `compact_memory.py` is read-only and only proposes a strategy.
 - `migrate_agents.py` is read-only and only proposes a migration plan.
+- `migrate_context.py` is read-only and only classifies legacy context sources.
 
 Risky changes such as compaction, archival, deletion, or `AGENTS.md` rewrites should be reviewed and confirmed by the developer before an agent applies patches.
 
@@ -156,6 +165,7 @@ python3 skills/project-memory/scripts/diagnose_memory.py --target /tmp/project-m
 python3 skills/project-memory/scripts/diagnose_memory.py --target /tmp/project-memory-smoke --context-gate
 python3 skills/project-memory/scripts/inspect_project.py --target /tmp/project-memory-smoke
 python3 skills/project-memory/scripts/memory_bridge.py detect --target /tmp/project-memory-smoke
+python3 skills/project-memory/scripts/migrate_context.py --target /tmp/project-memory-smoke
 ```
 
 If the Codex skill validator and `PyYAML` are available:

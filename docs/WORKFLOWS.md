@@ -75,10 +75,11 @@
 4. After migration, run diagnosis and log the migration.
 
 ## Plan Existing-Context Migration
-1. Identify useful historical context sources: `AGENTS.md`, README, old docs, TODOs, roadmaps, changelogs, handoff notes, and developer-specified files.
-2. Classify content into project-memory targets: `AGENTS.md`, `PROJECT_STATUS.md`, `docs/PLAN.md`, `docs/DECISIONS.md`, `docs/ENVIRONMENT.md`, `docs/REPOSITORY.md`, `docs/COORDINATION.md`, `docs/LOG.md`, and `docs/DOMAIN.md` when present.
-3. Present a read-only migration plan before applying patches.
-4. Do not special-case `conductor/`; it is an external static context conflict signal, not a supported migration format.
+1. Run `scripts/migrate_context.py --target <project>`.
+2. Review suggested sources such as `AGENTS.md`, README, old docs, TODOs, roadmaps, changelogs, handoff notes, and developer-specified files.
+3. Classify content into project-memory targets: `AGENTS.md`, `PROJECT_STATUS.md`, `docs/PLAN.md`, `docs/DECISIONS.md`, `docs/ENVIRONMENT.md`, `docs/REPOSITORY.md`, `docs/COORDINATION.md`, `docs/LOG.md`, and `docs/DOMAIN.md` when present.
+4. Present the read-only migration plan before applying patches.
+5. Do not special-case `conductor/`; it is an external static context conflict signal, not a supported migration format.
 
 ## Prepare Public Repository Release
 1. Confirm README, license, ignore rules, and project status are public-safe.
