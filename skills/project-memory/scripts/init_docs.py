@@ -30,10 +30,9 @@ ADDON_ALIASES = {
     "ai": "data-ai",
     "ml": "data-ai",
     # Domain-specific requests intentionally collapse to generic domain context.
-    "cad": "domain",
-    "3d": "domain",
-    "modeling": "domain",
-    "modelling": "domain",
+    "business": "domain",
+    "subject": "domain",
+    "professional": "domain",
 }
 
 ADDON_KEYWORDS = {

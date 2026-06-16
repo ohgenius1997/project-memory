@@ -1,6 +1,6 @@
 ---
 name: project-memory
-description: Initialize, diagnose, migrate, compact-plan, and maintain lightweight agent-facing project memory docs for coding projects. Use when the user asks to initialize project documentation, manage project memory, recover context, create agent runbooks, record project principles, progress logs, environment notes, repository rules, coordination docs, handoff notes, Vibe Coding readiness checks, AGENTS.md migration plans, context-budget compaction planning, or cross-device/project-state sync checks for software, skill, app, data, CAD, or agent projects.
+description: Initialize, diagnose, migrate, compact-plan, and maintain lightweight agent-facing project memory docs for coding projects. Use when the user asks to initialize project documentation, manage project memory, recover context, create agent runbooks, record project principles, progress logs, environment notes, repository rules, coordination docs, handoff notes, Vibe Coding readiness checks, AGENTS.md migration plans, context-budget compaction planning, or cross-device/project-state sync checks for software, skill, app, data, docs, system, or agent projects.
 ---
 
 # Project Memory
@@ -57,7 +57,7 @@ If the user gives only natural language, infer addons conservatively from projec
 - Platform/runtime addons: `web`, `ios`, `cli`, `cloud`
 - Domain context addon: `domain`
 
-Do not create domain-specific addons such as `cad`, `finance`, or `pin-bead`. Business or technical domain knowledge belongs in `docs/DOMAIN.md`, `docs/CONTEXT.md`, `docs/PLAN.md`, or project-shape docs.
+Do not create domain-specific addons such as `billing`, `medical`, or `inventory`. Business or technical domain knowledge belongs in `docs/DOMAIN.md`, `docs/CONTEXT.md`, `docs/PLAN.md`, or project-shape docs.
 
 Always include core docs. Add only relevant addons; do not generate comprehensive docs for hypothetical future needs.
 

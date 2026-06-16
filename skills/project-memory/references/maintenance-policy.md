@@ -26,7 +26,7 @@ Addons describe project shape and platform/runtime, not business domains:
 - Platform/runtime: `web`, `ios`, `cli`, `cloud`
 - Domain knowledge: `domain`
 
-Do not create one-off business-domain addons such as CAD, finance, or pin-bead. Put those facts in `docs/DOMAIN.md` and project-specific specs.
+Do not create one-off business-domain addons such as billing, medical, or inventory. Put those facts in `docs/DOMAIN.md` and project-specific specs.
 
 ## Update Policy
 
