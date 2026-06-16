@@ -18,10 +18,10 @@
 - Project: `project-memory`
 - Kind: Codex skill
 - Domain: agent-facing project memory management
-- Current phase: Phase 7/8 PDY_2 dogfood fixes validated
+- Current phase: Phase 7/8 PDY_2 dogfood fixes published
 - Current branch: `main`
 - Latest conclusion: PDY_2 dogfood confirmed the key brownfield case: legacy docs should be classified as Existing Context Migration sources, not treated as malformed project-memory docs.
-- Next step: push the Phase 7/8 dogfood fixes.
+- Next step: monitor GitHub Actions and consider a developer-confirmed PDY_2 initialization/migration patch in a separate pass.
 - Blockers: none
 - Active risks: `migrate_context.py` uses heuristic classification; output should remain advisory and developer-confirmed.
 
@@ -54,6 +54,6 @@
 
 ## Handoff
 - Last completed: tracks/context-gate/bridge/inspect implementation, validation, local install sync, commit, and push.
-- In progress: push dogfood fixes.
-- Validation done: `py_compile`, official `quick_validate.py`, fresh init smoke, smoke `brief_memory.py`, `diagnose_memory.py --context-gate`, `inspect_project.py`, `memory_bridge.py detect`, `migrate_context.py`; PDY_2 read-only `inspect_project.py`, `diagnose_memory.py --context-gate`, `migrate_agents.py`, `migrate_context.py`; whitespace check.
+- In progress: none
+- Validation done: `py_compile`, official `quick_validate.py`, fresh init smoke, smoke `brief_memory.py`, `diagnose_memory.py --context-gate`, `inspect_project.py`, `memory_bridge.py detect`, `migrate_context.py`; PDY_2 read-only `inspect_project.py`, `diagnose_memory.py --context-gate`, `migrate_agents.py`, `migrate_context.py`; whitespace check; local install sync; pushed to GitHub.
 - Known risks: new bridge command compatibility is best-effort because projectmem CLI shapes may vary; migration classification is heuristic.

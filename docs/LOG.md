@@ -37,3 +37,4 @@
 - Found `PDY_2` at `/Users/bytedance/.codex/worktrees/8211/PDY_2` and ran read-only Phase 7 dogfood checks.
 - PDY_2 dogfood showed a brownfield project with `AGENTS.md` plus six legacy docs and no project-memory core docs. Diagnosis was too noisy because old docs were treated as malformed memory docs.
 - Updated diagnosis to emit a single legacy-context finding, updated inspection to show legacy context sources and detached HEAD, kept short AGENTS instructions in place during migration planning, and added `migrate_context.py` for generic existing-context migration plans.
+- Synced the updated skill to the local Codex skills directory, committed the dogfood fixes, and pushed them to GitHub.
