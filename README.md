@@ -7,11 +7,13 @@ It helps long-running AI-assisted coding projects preserve the context that futu
 ## What It Provides
 
 - Project memory initialization from templates
+- Short current-state briefs for new sessions
 - Task-based read paths for future agent sessions
 - Vibe Coding readiness checks
 - Context-budget diagnostics
 - Read-only compaction plans
 - Read-only `AGENTS.md` migration plans
+- Optional projectmem/conductor detection rules
 - Source-of-truth conventions for project docs
 
 ## Repository Layout
@@ -24,6 +26,7 @@ skills/project-memory/
   references/maintenance-policy.md
   scripts/
     init_docs.py
+    brief_memory.py
     diagnose_memory.py
     compact_memory.py
     migrate_agents.py
@@ -54,9 +57,12 @@ python3 skills/project-memory/scripts/init_docs.py \
   --domain "agent-facing project memory"
 ```
 
+If the target already contains `conductor/`, initialization stops by default to avoid duplicate static context systems. Rerun with `--allow-conductor` only after choosing the source-of-truth split.
+
 Diagnose project memory health:
 
 ```bash
+python3 skills/project-memory/scripts/brief_memory.py --target /path/to/project
 python3 skills/project-memory/scripts/diagnose_memory.py --target /path/to/project
 ```
 
@@ -83,6 +89,16 @@ The helper scripts are intentionally conservative:
 
 Risky changes such as compaction, archival, deletion, or `AGENTS.md` rewrites should be reviewed and confirmed by the developer before an agent applies patches.
 
+## Interop Guidance
+
+`project-memory` can coexist with other memory tools when ownership is explicit:
+
+- Use `project-memory` for stable project governance: current status, principles, plans, durable decisions, environment, repository, coordination, and AI permission boundaries.
+- Use projectmem, when installed, for dynamic events: issues, attempts, fixes, file-level gotchas, and precheck hints.
+- Treat `conductor/` from context-driven-development as an alternate static context system. Do not keep overlapping facts in both `conductor/` and `docs/` unless you record a source-of-truth split.
+
+For most projects, commit generated project-memory docs to git so context travels across devices and sessions. Do not commit secrets, private customer details, or machine-specific credentials.
+
 ## Validation
 
 Run script syntax checks:
@@ -90,6 +106,20 @@ Run script syntax checks:
 ```bash
 PYTHONPYCACHEPREFIX=/tmp/project-memory-pycache \
 python3 -m py_compile skills/project-memory/scripts/*.py
+```
+
+Run the built-in smoke checks:
+
+```bash
+python3 skills/project-memory/scripts/init_docs.py \
+  --target /tmp/project-memory-smoke \
+  --project-name "Smoke" \
+  --project-kind "Codex skill" \
+  --domain "agent-facing project memory" \
+  --addons skill,docs,domain
+
+python3 skills/project-memory/scripts/brief_memory.py --target /tmp/project-memory-smoke
+python3 skills/project-memory/scripts/diagnose_memory.py --target /tmp/project-memory-smoke
 ```
 
 If the Codex skill validator and `PyYAML` are available:

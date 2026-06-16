@@ -19,6 +19,8 @@ Use this reference when diagnosing, compacting, or repairing generated project m
 
 Prefer task-based read paths over reading all docs. Read all memory docs only when diagnosing, compacting, preparing a major handoff, or resolving cross-document conflicts.
 
+Use `scripts/brief_memory.py` at session start when present. It provides a short current-state summary, recommended read set, and external-memory warnings without loading every project document.
+
 ## Addon Abstraction
 
 Addons describe project shape and platform/runtime, not business domains:
@@ -28,6 +30,20 @@ Addons describe project shape and platform/runtime, not business domains:
 
 Do not create one-off business-domain addons such as billing, medical, or inventory. Put those facts in `docs/DOMAIN.md` and project-specific specs.
 
+## External Memory Interop
+
+Projectmem is a dynamic event memory layer. Use it for issues, attempts, fixes, file-level gotchas, and precheck hints. Do not hand-edit raw projectmem event logs. At session end, use recent projectmem events to check whether `PROJECT_STATUS.md` is stale, but do not mechanically copy every event into project-memory docs.
+
+Precheck output is risk evidence. It can require mitigation, extra testing, or plan changes, but it must not be the only reason to refuse a user request.
+
+Conductor/context-driven-development is an alternate static context system. If `conductor/` exists, do not create overlapping project-memory docs until the developer chooses one of:
+
+1. Keep Conductor as the static context source and use project-memory only for reading/diagnosis.
+2. Migrate Conductor facts into project-memory docs using a reviewed migration plan.
+3. Mix both systems with an explicit source-of-truth table.
+
+Avoid long-term dual ownership of product, technical, workflow, or work-unit facts.
+
 ## Update Policy
 
 Update project memory during the task when a conclusion, state, or operational assumption changes. Keep updates scoped. Prefer appending concise entries to logs and decisions over rewriting history.
@@ -35,6 +51,19 @@ Update project memory during the task when a conclusion, state, or operational a
 Warn the developer when a project memory doc exceeds its `max_lines` budget or mixes stale history with current state. Recommend compact, but do not run compaction changes without confirmation.
 
 Before broad AI implementation, check `docs/VIBE_READINESS.md`. If product goal, stack/runtime, conventions, core contracts, development red lines, or AI permission boundaries are missing, warn the developer and either clarify or record the unknowns explicitly.
+
+Before broad implementation or large refactors, also run a context gate:
+- `PROJECT_STATUS.md` next step should match the intended task.
+- Relevant durable decisions should be reviewed.
+- Environment and repository docs should be current when tooling, dependency, CI, release, branch, or cross-device work is involved.
+- If projectmem exists, recent failures and precheck hints should be considered.
+- If Conductor exists, static-context ownership should be explicit.
+
+Common anti-patterns:
+- Stale context: docs no longer match code or current plan.
+- Context sprawl: multiple docs own the same fact.
+- Implicit context: repeatedly used knowledge is not captured anywhere.
+- Over-specification: docs become too detailed to maintain.
 
 ## AGENTS.md Policy
 

@@ -14,11 +14,18 @@
 - Do not duplicate current roadmap details from `PLAN.md`.
 
 ## Workflow Index
+- Generate project memory brief
 - Initialize project memory
 - Diagnose project memory
 - Generate compaction plan
 - Plan AGENTS.md migration
 - Prepare public repository release
+
+## Generate Project Memory Brief
+1. Run `scripts/brief_memory.py --target <project>`.
+2. Use the recommended read set instead of loading all docs.
+3. If projectmem is detected, use summaries/precheck rather than raw logs.
+4. If Conductor is detected, confirm static context ownership before editing overlapping docs.
 
 ## Initialize Project Memory
 1. Run `scripts/init_docs.py` with project name, kind, domain, and addons.
@@ -29,8 +36,9 @@
 ## Diagnose Project Memory
 1. Run `scripts/diagnose_memory.py --target <project>`.
 2. Report findings before applying changes.
-3. Recommend compact or migrate-agents when budgets are exceeded.
-4. Patch only routine, clear updates unless the developer confirms larger changes.
+3. Check for context-budget issues, stale setup/repository notes, projectmem routing, and Conductor source-of-truth conflicts.
+4. Recommend compact or migrate-agents when budgets are exceeded.
+5. Patch only routine, clear updates unless the developer confirms larger changes.
 
 ## Generate Compaction Plan
 1. Run `scripts/compact_memory.py --target <project>`.

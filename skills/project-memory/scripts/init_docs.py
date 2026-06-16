@@ -243,6 +243,11 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--dry-run", action="store_true", help="Print actions without writing.")
     parser.add_argument(
+        "--allow-conductor",
+        action="store_true",
+        help="Allow initialization when conductor/ exists. Use only after confirming source-of-truth ownership.",
+    )
+    parser.add_argument(
         "--list-addons",
         action="store_true",
         help="List known addons and exit.",
@@ -262,6 +267,14 @@ def main() -> int:
         return 2
 
     target = Path(args.target).expanduser().resolve()
+    if (target / "conductor").exists() and not args.allow_conductor:
+        print(
+            "Target contains conductor/. Confirm static context ownership before "
+            "creating overlapping project-memory docs, or rerun with --allow-conductor.",
+            file=sys.stderr,
+        )
+        return 2
+
     project_name = args.project_name.strip() or target.name
     project_kind = args.project_kind.strip() or "software project"
     domain = args.domain.strip() or "unspecified"
@@ -324,6 +337,7 @@ def main() -> int:
         print("Force mode was enabled; existing files may have been replaced.")
 
     print("\nNext:")
+    print("- Run `brief_memory.py --target <project>` at session start for a short read-path recommendation.")
     print("- Fill `PROJECT_STATUS.md` current phase, branch, next action, and risks.")
     print("- Fill `docs/CONTEXT.md` known facts and assumptions.")
     print("- Fill `docs/PLAN.md` current approach and next actions.")

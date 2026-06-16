@@ -7,6 +7,7 @@ import argparse
 import datetime as dt
 import json
 import re
+import shutil
 import subprocess
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -39,6 +40,28 @@ DEFAULT_BUDGETS = {
     "docs/LOG.md": 500,
     "docs/COORDINATION.md": 220,
 }
+
+DEPENDENCY_AND_SETUP_FILES = [
+    "package.json",
+    "package-lock.json",
+    "pnpm-lock.yaml",
+    "yarn.lock",
+    "bun.lockb",
+    "pyproject.toml",
+    "requirements.txt",
+    "poetry.lock",
+    "uv.lock",
+    "Cargo.toml",
+    "Cargo.lock",
+    "Package.swift",
+    "go.mod",
+    "go.sum",
+    "Gemfile",
+    "Gemfile.lock",
+    "composer.json",
+    "Dockerfile",
+    "docker-compose.yml",
+]
 
 
 @dataclass
@@ -74,6 +97,16 @@ def git_lines(target: Path, args: list[str]) -> list[str]:
     return [line.strip() for line in proc.stdout.splitlines() if line.strip()]
 
 
+def git_date_for_path(target: Path, relative: str) -> dt.date | None:
+    lines = git_lines(target, ["log", "-1", "--format=%cs", "--", relative])
+    if not lines:
+        return None
+    try:
+        return dt.date.fromisoformat(lines[0])
+    except ValueError:
+        return None
+
+
 def add(
     findings: list[Finding],
     severity: str,
@@ -106,6 +139,37 @@ def max_lines_for(relative: str, text: str) -> int | None:
     if match:
         return int(match.group(1))
     return DEFAULT_BUDGETS.get(relative)
+
+
+def review_dates(text: str) -> list[dt.date]:
+    matches = re.findall(
+        r"Date:\s*(\d{4}-\d{2}-\d{2})|Last reviewed:\s*(\d{4}-\d{2}-\d{2})",
+        text,
+        re.I,
+    )
+    dates: list[dt.date] = []
+    for first, second in matches:
+        value = first or second
+        if not value:
+            continue
+        try:
+            dates.append(dt.date.fromisoformat(value))
+        except ValueError:
+            continue
+    return dates
+
+
+def tracked_dependency_files(target: Path) -> list[str]:
+    files: set[str] = set()
+    for relative in DEPENDENCY_AND_SETUP_FILES:
+        if (target / relative).exists():
+            files.add(relative)
+    workflows = target / ".github" / "workflows"
+    if workflows.exists():
+        for path in workflows.glob("*.y*ml"):
+            if path.is_file():
+                files.add(str(path.relative_to(target)))
+    return sorted(files)
 
 
 def diagnose(target: Path) -> list[Finding]:
@@ -225,14 +289,9 @@ def diagnose(target: Path) -> list[Finding]:
     for relative in ["docs/ENVIRONMENT.md", "docs/REPOSITORY.md", "docs/COORDINATION.md"]:
         path = target / relative
         text = read(path)
-        dates = re.findall(
-            r"Date:\s*(\d{4}-\d{2}-\d{2})|Last reviewed:\s*(\d{4}-\d{2}-\d{2})",
-            text,
-            re.I,
-        )
-        flat_dates = [a or b for a, b in dates if a or b]
-        if flat_dates:
-            latest = max(dt.date.fromisoformat(value) for value in flat_dates)
+        dates = review_dates(text)
+        if dates:
+            latest = max(dates)
             age = (dt.date.today() - latest).days
             if age > 60:
                 add(
@@ -253,6 +312,23 @@ def diagnose(target: Path) -> list[Finding]:
             "docs/ENVIRONMENT.md",
             "Environment doc still contains TBD placeholders.",
             "Fill required tools, dependencies, and machine-specific notes when setup work begins.",
+        )
+
+    env_dates = review_dates(env)
+    env_latest = max(env_dates) if env_dates else None
+    changed_setup_files: list[str] = []
+    for relative in tracked_dependency_files(target):
+        changed = git_date_for_path(target, relative)
+        if changed and env_latest and changed > env_latest:
+            changed_setup_files.append(relative)
+    if changed_setup_files:
+        add(
+            findings,
+            "warning",
+            "environment-may-be-stale",
+            "docs/ENVIRONMENT.md",
+            "Setup or dependency files changed after the last recorded environment review.",
+            "Review environment notes for: " + ", ".join(changed_setup_files[:6]),
         )
 
     repo = read(target / "docs/REPOSITORY.md")
@@ -289,6 +365,58 @@ def diagnose(target: Path) -> list[Finding]:
             f"Repository has {len(branches)} local branches but coordination is not active.",
             "Activate coordination if branches represent parallel workstreams.",
         )
+
+    projectmem_exists = (target / ".projectmem").exists()
+    if projectmem_exists:
+        routing_text = "\n".join(
+            [
+                read(target / "AGENTS.md"),
+                read(target / "docs/PRINCIPLES.md"),
+                read(target / "docs/PLAN.md"),
+            ]
+        ).lower()
+        if "projectmem" not in routing_text and ".projectmem" not in routing_text:
+            add(
+                findings,
+                "warning",
+                "projectmem-routing-undocumented",
+                ".projectmem",
+                "Projectmem appears to be installed but project memory docs do not mention the ownership split.",
+                "Document that project-memory owns stable governance while projectmem owns dynamic events and precheck hints.",
+            )
+
+    if shutil.which("pjm") and not projectmem_exists:
+        add(
+            findings,
+            "info",
+            "projectmem-cli-available",
+            "project-memory",
+            "`pjm` is available but this project does not contain `.projectmem/`.",
+            "Use projectmem only if the developer wants dynamic event memory and precheck support.",
+        )
+
+    conductor_exists = (target / "conductor").exists()
+    if conductor_exists:
+        routing_text = "\n".join(
+            [
+                read(target / "AGENTS.md"),
+                read(target / "docs/PRINCIPLES.md"),
+                read(target / "docs/PLAN.md"),
+            ]
+        ).lower()
+        has_project_memory_docs = (target / "PROJECT_STATUS.md").exists() or (target / "docs").exists()
+        has_ownership = "conductor" in routing_text and (
+            "source of truth" in routing_text or "source-of-truth" in routing_text
+        )
+        if has_project_memory_docs and not has_ownership:
+            add(
+                findings,
+                "warning",
+                "static-context-source-conflict",
+                "conductor",
+                "Both `conductor/` and project-memory docs exist without explicit source-of-truth ownership.",
+                "Choose Conductor, project-memory, or a documented split before maintaining overlapping static context.",
+            )
 
     porcelain = git_lines(target, ["status", "--short"])
     if porcelain and (target / "PROJECT_STATUS.md").exists():

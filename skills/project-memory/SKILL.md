@@ -25,6 +25,8 @@ When resuming a project with this documentation system, read:
 8. `docs/COORDINATION.md` when parallel sessions, branches, agents, devices, or handoffs are involved
 9. `docs/LOG.md` only when historical detail is needed
 
+When available, run `scripts/brief_memory.py --target /path/to/project` first to get a short current-state brief and task-based read recommendations.
+
 ## Task-Based Read Paths
 
 Use the smallest read set that can safely answer the task:
@@ -37,9 +39,15 @@ Use the smallest read set that can safely answer the task:
 - Handle parallel work, handoff, or long-running tasks: add `docs/COORDINATION.md`
 - Need business/domain terms or user mental model: add `docs/DOMAIN.md` if present
 - Need historical reasoning: read `docs/LOG.md` selectively
+- Project has `.projectmem/`: treat projectmem as dynamic event memory; use summaries/precheck results, not raw event logs
+- Project has `conductor/`: treat it as an alternate static context system; do not create duplicate project-memory docs without confirming source-of-truth ownership
 - Diagnose or compact project memory: read all memory docs, then report findings before patching
 
 ## Workflows
+
+### Brief
+
+Use `scripts/brief_memory.py --target /path/to/project` at the start of a session or before a handoff. It is read-only and prints current phase, latest conclusion, next step, blockers, risks, recommended files to read, and detected external memory systems.
 
 ### Initialize
 
@@ -61,9 +69,15 @@ Do not create domain-specific addons such as `billing`, `medical`, or `inventory
 
 Always include core docs. Add only relevant addons; do not generate comprehensive docs for hypothetical future needs.
 
+If a target already contains `conductor/`, `init_docs.py` stops by default. Ask the developer whether to keep Conductor as the static context source, migrate to project-memory, or explicitly mix both with a source-of-truth table. Use `--allow-conductor` only after that decision.
+
 ### Resume
 
 Read the default files in order. Summarize current phase, durable decisions, active constraints, next action, and any stale or missing context before doing project work.
+
+If `.projectmem/` exists, also consult projectmem summary/recent/precheck through its available CLI or MCP tools. Do not read raw event logs unless the developer explicitly asks for forensic detail.
+
+If `conductor/` exists, read its index and relevant artifacts only after confirming whether Conductor or project-memory owns the static project context.
 
 ### Checkpoint
 
@@ -89,6 +103,10 @@ If any doc exceeds its context budget, explicitly recommend running compact. Do 
 
 If `AGENTS.md` exceeds its context budget, recommend `migrate-agents` instead of ordinary compaction because `AGENTS.md` is always-on context.
 
+If `.projectmem/` exists but the routing rules do not mention projectmem, recommend documenting the split: project-memory owns stable governance, projectmem owns dynamic events and precheck hints.
+
+If both `conductor/` and project-memory docs exist, warn about static-context source-of-truth conflicts unless an explicit ownership table says which system owns product, technical, workflow, and work-unit facts.
+
 ### Vibe Readiness
 
 Use `docs/VIBE_READINESS.md` as the readiness gate before large AI-assisted implementation. It should capture:
@@ -101,6 +119,40 @@ Use `docs/VIBE_READINESS.md` as the readiness gate before large AI-assisted impl
 - AI permission boundaries: direct edits, plan-first areas, confirmation gates, forbidden actions, human review areas
 
 This is not a requirement that every detail be finalized before exploration. Unknowns must be explicit so future sessions do not treat guesses as facts.
+
+### Context Gate
+
+Before broad implementation, large refactors, or work on a new feature track, verify:
+
+- Product goal, success standard, stack/runtime, core contracts, red lines, and AI boundaries are current in `docs/VIBE_READINESS.md`
+- `PROJECT_STATUS.md` next step matches the intended work
+- Relevant durable decisions have been read from `docs/DECISIONS.md`
+- Environment and repository rules are current when tooling, dependencies, CI, release, or branches are involved
+- If `.projectmem/` exists, recent failures and precheck results have been considered
+- If `conductor/` exists, static-context source-of-truth ownership is explicit
+
+Context Gate produces warnings and update recommendations. It should not block the developer's request by itself.
+
+### Projectmem Interop
+
+Use projectmem as an optional dynamic event layer, not a replacement for project-memory docs.
+
+- project-memory owns stable project governance: current status, principles, plans, durable decisions, environment, repository, coordination, and AI boundaries
+- projectmem owns dynamic events: issues, attempts, fixes, file-level gotchas, and precheck hints
+- Treat projectmem precheck as risk input. It may require explaining mitigation or changing approach, but it must not be the sole reason to refuse a user request
+- At session end, use recent projectmem events to check whether `PROJECT_STATUS.md` is stale; summarize only durable current state, not every event
+- Do not hand-edit projectmem raw event logs
+
+### Conductor Detection
+
+Treat `conductor/` from context-driven-development as an alternate static context system, not a default companion layer.
+
+When `conductor/` exists:
+
+1. Do not generate overlapping project-memory docs by default.
+2. Ask whether to keep Conductor, migrate to project-memory, or explicitly mix them.
+3. If mixing, record a source-of-truth table in `AGENTS.md` or project docs before continuing.
+4. Prefer migration plans over automatic rewrites.
 
 ### Compact
 
@@ -154,11 +206,14 @@ After developer confirmation, the agent may apply patches according to the plan,
 - Treat generated docs as source-of-truth ownership boundaries: put each fact in the file whose maintenance rules own it.
 - Keep docs within their context budgets. Warn the developer and recommend compact when docs exceed budget or mix stale history with current state.
 - Separate known facts, decisions, assumptions, open questions, and risks when recording non-trivial context.
+- Do not maintain two static context systems without explicit source-of-truth ownership.
+- Do not let external memory warnings become automatic refusal criteria.
 
 ## Resources
 
 - `assets/templates/`: core and addon documentation templates.
 - `scripts/init_docs.py`: initialize docs from templates.
+- `scripts/brief_memory.py`: read-only current-state brief and read-path recommendation.
 - `scripts/diagnose_memory.py`: read-only documentation health diagnosis.
 - `scripts/compact_memory.py`: read-only compaction strategy generator.
 - `scripts/migrate_agents.py`: read-only AGENTS.md migration planner.

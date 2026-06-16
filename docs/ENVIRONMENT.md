@@ -22,6 +22,7 @@
 - Git
 - Python 3.9+ for helper scripts
 - Codex skill runtime for actual skill usage
+- GitHub Actions for public repository validation
 
 ## Dependencies
 - Runtime scripts use only the Python standard library.
@@ -29,6 +30,7 @@
 
 ## Setup Commands
 - Validate scripts: `PYTHONPYCACHEPREFIX=/tmp/project-memory-pycache python3 -m py_compile skills/project-memory/scripts/*.py`
+- Generate brief: `python3 skills/project-memory/scripts/brief_memory.py --target .`
 - Validate skill when PyYAML is available: `python3 /path/to/quick_validate.py skills/project-memory`
 
 ## Machine-Specific Notes

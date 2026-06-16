@@ -24,3 +24,6 @@
 - Removed active-project references to the obsolete origin context and kept the details in `docs/archive/origin-scope-pivot.md`.
 - Validated Python script syntax, official skill metadata, initialization dry-run, and project memory diagnosis before the first public push.
 - Added GitHub remote `https://github.com/ohgenius1997/project-memory.git` and pushed `main`.
+- Began Phase 0-3 optimization: added projectmem interop rules, Conductor detection rules, Context Gate guidance, `brief_memory.py`, expanded diagnosis checks, README updates, and GitHub Actions validation.
+- Synced the updated `project-memory` skill into the local Codex skills directory and validated the installed copy.
+- Added `init_docs.py --allow-conductor` as an explicit confirmation gate for projects that already use `conductor/`.

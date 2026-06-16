@@ -19,6 +19,8 @@
 - 2026-06-16 - Use project-shape/platform/domain addon model
 - 2026-06-16 - Add Vibe readiness gate
 - 2026-06-16 - Use MIT license for open source release
+- 2026-06-16 - Keep projectmem optional and advisory
+- 2026-06-16 - Treat Conductor as alternate static context
 
 ## Decision Log
 
@@ -47,3 +49,13 @@
 - Decision: Publish under MIT license.
 - Rationale: The project is a lightweight developer tool where broad reuse and modification are desirable.
 - Consequences: Users can reuse and adapt the skill with minimal restrictions.
+
+### 2026-06-16 - Keep projectmem optional and advisory
+- Decision: `project-memory` will detect and route around projectmem but will not require it.
+- Rationale: projectmem is useful as a dynamic event layer, while `project-memory` should remain a lightweight Codex skill.
+- Consequences: projectmem warnings can influence plans and testing, but they cannot be the sole reason to refuse a user request.
+
+### 2026-06-16 - Treat Conductor as alternate static context
+- Decision: `conductor/` from context-driven-development is an alternate static context system, not a default companion layer.
+- Rationale: Conductor and project-memory both own static project context, so default coexistence risks duplicate facts.
+- Consequences: detection should prompt migration, read-only compatibility, or explicit source-of-truth ownership.

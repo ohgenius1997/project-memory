@@ -18,12 +18,12 @@
 - Project: `project-memory`
 - Kind: Codex skill
 - Domain: agent-facing project memory management
-- Current phase: public GitHub repository published
+- Current phase: Phase 0-3 improvements implemented
 - Current branch: `main`
-- Latest conclusion: the project is fully scoped as the `project-memory` skill.
-- Next step: verify GitHub rendering and configure repository description/topics if needed.
+- Latest conclusion: keep `project-memory` lightweight while adding read-only brief, interop routing, and context-risk diagnosis.
+- Next step: commit and push Phase 0-3 improvements, then plan optional tracks/context-gate diagnostics.
 - Blockers: none
-- Active risks: no CI is configured yet, so validation remains local.
+- Active risks: new projectmem/conductor rules must stay advisory and not turn into heavy runtime coupling.
 
 ## Changed Since Last Checkpoint
 - Initialized project memory docs for this repository.
@@ -32,6 +32,8 @@
 - Added open-source repository files: `README.md`, `LICENSE`, `.gitignore`.
 - Validated script syntax, skill metadata, initialization dry-run, and project memory diagnosis.
 - Added `origin` remote and pushed `main` to GitHub.
+- Added projectmem interop rules, conductor detection rules, context gate guidance, brief workflow, and CI validation.
+- Synced updated skill source to local Codex skills install.
 
 ## Read Next
 - Continue implementation: `docs/PRINCIPLES.md`, `docs/PLAN.md`
@@ -41,7 +43,7 @@
 - Historical origin only if explicitly needed: `docs/archive/origin-scope-pivot.md`
 
 ## Handoff
-- Last completed: project pivot cleanup and public-repo validation.
-- In progress: public repository verification.
-- Validation done: `py_compile`, `init_docs.py --dry-run`, official `quick_validate.py`, and `diagnose_memory.py`.
-- Known risks: no CI is configured yet.
+- Last completed: Phase 0-3 implementation and local install sync.
+- In progress: commit and push.
+- Validation done: `py_compile`, `brief_memory.py`, `diagnose_memory.py`, init smoke test, CI YAML parse, official `quick_validate.py` for repo and installed skill.
+- Known risks: optional tracks/context-gate diagnostics are not implemented yet.

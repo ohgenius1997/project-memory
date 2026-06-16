@@ -1,0 +1,58 @@
+name: Validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  skill:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Check script syntax
+        run: |
+          PYTHONPYCACHEPREFIX=/tmp/project-memory-pycache \
+            python -m py_compile skills/project-memory/scripts/*.py
+
+      - name: Validate skill metadata
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import sys
+
+          skill = Path("skills/project-memory/SKILL.md")
+          text = skill.read_text(encoding="utf-8")
+          if not text.startswith("---\n"):
+              sys.exit("SKILL.md must start with YAML frontmatter")
+          try:
+              _, frontmatter, _ = text.split("---", 2)
+          except ValueError:
+              sys.exit("SKILL.md frontmatter is not closed")
+          fields = {}
+          for line in frontmatter.splitlines():
+              if ":" in line:
+                  key, value = line.split(":", 1)
+                  fields[key.strip()] = value.strip()
+          if fields.get("name") != "project-memory":
+              sys.exit("SKILL.md name must be project-memory")
+          if not fields.get("description"):
+              sys.exit("SKILL.md description is required")
+          PY
+
+      - name: Smoke test initialization
+        run: |
+          python skills/project-memory/scripts/init_docs.py \
+            --target /tmp/project-memory-smoke \
+            --project-name "Smoke" \
+            --project-kind "Codex skill" \
+            --domain "agent-facing project memory" \
+            --addons skill,docs,domain
+
+          python skills/project-memory/scripts/brief_memory.py --target /tmp/project-memory-smoke
+          python skills/project-memory/scripts/diagnose_memory.py --target /tmp/project-memory-smoke
