@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Initialize agent-facing project memory docs from bundled templates."""
+"""Initialize AGENTS-first project context router files from bundled templates."""
 
 from __future__ import annotations
 
@@ -13,6 +13,24 @@ SKILL_ROOT = Path(__file__).resolve().parents[1]
 TEMPLATE_ROOT = SKILL_ROOT / "assets" / "templates"
 CORE_TEMPLATE = TEMPLATE_ROOT / "core"
 ADDONS_ROOT = TEMPLATE_ROOT / "addons"
+
+PROFILES = {
+    "minimal": [
+        "AGENTS.md",
+    ],
+    "standard": [
+        "AGENTS.md",
+        "PROJECT_STATUS.md",
+        "docs/DECISIONS.md",
+    ],
+    "governed": [
+        "AGENTS.md",
+        "PROJECT_STATUS.md",
+        "docs/DECISIONS.md",
+        "docs/ENVIRONMENT.md",
+        "docs/COORDINATION.md",
+    ],
+}
 
 ADDON_GROUPS = {
     "project shape": ["skill", "app", "system", "library", "docs", "data-ai"],
@@ -202,6 +220,7 @@ def copy_templates(
     *,
     force: bool,
     dry_run: bool,
+    include: set[str] | None = None,
 ) -> tuple[list[Path], list[Path]]:
     created: list[Path] = []
     skipped: list[Path] = []
@@ -211,6 +230,9 @@ def copy_templates(
             continue
         relative = source.relative_to(template_dir)
         if any(part.startswith(".") for part in relative.parts):
+            continue
+        relative_posix = relative.as_posix()
+        if include is not None and relative_posix not in include:
             continue
         destination = target / relative
         if destination.exists() and not force:
@@ -234,12 +256,29 @@ def print_addons() -> None:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Initialize agent-facing project memory docs."
+        description="Initialize AGENTS-first project context router files."
     )
     parser.add_argument("--target", help="Project directory to initialize.")
     parser.add_argument("--project-name", default="", help="Project display name.")
     parser.add_argument("--project-kind", default="software project", help="Project type.")
     parser.add_argument("--domain", default="", help="Business or product domain.")
+    parser.add_argument(
+        "--profile",
+        choices=sorted(PROFILES),
+        default="minimal",
+        help="Initialization profile. minimal creates only AGENTS.md; standard adds current state and decisions; governed adds environment and coordination docs.",
+    )
+    parser.add_argument(
+        "--dynamic-memory",
+        choices=["agentmemory", "none"],
+        default="agentmemory",
+        help="Dynamic memory pairing to document in AGENTS.md. project-memory recommends agentmemory but never installs it.",
+    )
+    parser.add_argument(
+        "--fallback-log",
+        action="store_true",
+        help="With standard/governed, also create docs/LOG.md as a lightweight checkpoint fallback when no dynamic memory tool is used.",
+    )
     parser.add_argument(
         "--addons",
         nargs="*",
@@ -254,11 +293,6 @@ def parse_args() -> argparse.Namespace:
         help="Overwrite existing files. Use only with explicit developer confirmation.",
     )
     parser.add_argument("--dry-run", action="store_true", help="Print actions without writing.")
-    parser.add_argument(
-        "--allow-conductor",
-        action="store_true",
-        help="Allow initialization when conductor/ exists. Use only after explicitly choosing to proceed despite an external static context directory.",
-    )
     parser.add_argument(
         "--list-addons",
         action="store_true",
@@ -279,21 +313,14 @@ def main() -> int:
         return 2
 
     target = Path(args.target).expanduser().resolve()
-    if (target / "conductor").exists() and not args.allow_conductor:
-        print(
-            "Target contains conductor/. project-memory treats this as an external "
-            "static context directory and does not parse or migrate it by default. "
-            "Rerun with --allow-conductor only after explicitly choosing to proceed.",
-            file=sys.stderr,
-        )
-        return 2
-
     project_name = args.project_name.strip() or target.name
     project_kind = args.project_kind.strip() or "software project"
     domain = args.domain.strip() or "unspecified"
+    profile = args.profile
+    dynamic_memory = args.dynamic_memory
 
     requested_addons = split_addons(args.addons)
-    addons = requested_addons or infer_addons(project_kind, domain)
+    addons = requested_addons
     unknown = sorted(set(addons) - KNOWN_ADDONS)
     if unknown:
         print(f"Unknown addon(s): {', '.join(unknown)}", file=sys.stderr)
@@ -308,6 +335,8 @@ def main() -> int:
         "PROJECT_KIND": project_kind,
         "DOMAIN": domain,
         "DATE": dt.date.today().isoformat(),
+        "PROFILE": profile,
+        "DYNAMIC_MEMORY": dynamic_memory,
         "ADDONS": ", ".join(addons) if addons else "none",
     }
 
@@ -318,8 +347,17 @@ def main() -> int:
     all_created: list[Path] = []
     all_skipped: list[Path] = []
 
+    core_include = set(PROFILES[profile])
+    if args.fallback_log or (dynamic_memory == "none" and profile in {"standard", "governed"}):
+        core_include.add("docs/LOG.md")
+
     created, skipped = copy_templates(
-        CORE_TEMPLATE, target, variables, force=args.force, dry_run=args.dry_run
+        CORE_TEMPLATE,
+        target,
+        variables,
+        force=args.force,
+        dry_run=args.dry_run,
+        include=core_include,
     )
     all_created.extend(created)
     all_skipped.extend(skipped)
@@ -345,18 +383,24 @@ def main() -> int:
         for path in all_skipped:
             print(f"  = {path}")
 
+    print(f"Selected profile: {profile}")
+    print(f"Dynamic memory: {dynamic_memory}")
     print(f"Selected addons: {', '.join(addons) if addons else 'none'}")
     if args.force:
         print("Force mode was enabled; existing files may have been replaced.")
 
     print("\nNext:")
-    print("- Run `brief_memory.py --target <project>` at session start for a short read-path recommendation.")
-    print("- Fill `PROJECT_STATUS.md` current phase, branch, next action, and risks.")
-    print("- Fill `docs/CONTEXT.md` known facts and assumptions.")
-    print("- Fill `docs/PLAN.md` current approach and next actions.")
-    print("- Fill `docs/VIBE_READINESS.md` product goal, stack/runtime, core contracts, red lines, and AI permission boundaries before broad code generation.")
-    print("- Fill `docs/REPOSITORY.md` before git/GitHub work.")
-    print("- Keep `docs/COORDINATION.md` inactive until work splits.")
+    print("- Keep `AGENTS.md` short; it is the always-on router, not a project encyclopedia.")
+    if dynamic_memory == "agentmemory":
+        print("- Install/connect agentmemory separately if you want automatic episodic memory; project-memory only documents the routing contract.")
+    else:
+        print("- No dynamic memory tool was selected; use fallback checkpoint docs conservatively.")
+    if profile in {"standard", "governed"}:
+        print("- Fill `PROJECT_STATUS.md` only with current phase, next step, blockers, and risks.")
+        print("- Fill `docs/DECISIONS.md` only for durable decisions and rationale.")
+    if profile == "governed":
+        print("- Fill `docs/ENVIRONMENT.md` before setup/cross-device work.")
+        print("- Keep `docs/COORDINATION.md` constrained to active handoff/collision state.")
     if "domain" in addons:
         print("- Fill `docs/DOMAIN.md` with domain terms, rules, and risks.")
     if "tracks" in addons:

@@ -11,18 +11,13 @@ from pathlib import Path
 
 
 DEFAULT_BUDGETS = {
-    "AGENTS.md": 160,
-    "PROJECT_STATUS.md": 150,
-    "docs/CONTEXT.md": 220,
-    "docs/PRINCIPLES.md": 100,
-    "docs/PLAN.md": 200,
+    "AGENTS.md": 90,
+    "PROJECT_STATUS.md": 90,
     "docs/TRACKS.md": 260,
-    "docs/VIBE_READINESS.md": 260,
     "docs/DECISIONS.md": 350,
     "docs/DOMAIN.md": 240,
     "docs/ENVIRONMENT.md": 220,
-    "docs/REPOSITORY.md": 220,
-    "docs/LOG.md": 500,
+    "docs/LOG.md": 220,
     "docs/COORDINATION.md": 220,
 }
 
@@ -33,7 +28,6 @@ PROFILE_MULTIPLIERS = {
 
 OPERATIONAL_FILES = {
     "docs/ENVIRONMENT.md",
-    "docs/REPOSITORY.md",
     "docs/COORDINATION.md",
 }
 
@@ -105,7 +99,7 @@ def plan(target: Path, profile: str) -> list[CompactionItem]:
                     "migrate-agents",
                     relative,
                     f"{relative} has {count} lines; budget is {budget}.",
-                    "Run migrate_agents.py to classify existing content and move detailed project memory to docs/. Keep only always-on routing rules in AGENTS.md.",
+                    "Run migrate_agents.py to classify existing content. Keep AGENTS.md as a short router; move only stable current state or durable decisions into profile docs.",
                     "high",
                 )
             elif relative == "PROJECT_STATUS.md":
@@ -114,7 +108,7 @@ def plan(target: Path, profile: str) -> list[CompactionItem]:
                     "trim",
                     relative,
                     f"{relative} has {count} lines; budget is {budget}.",
-                    "Keep current phase, latest conclusion, next action, blockers, active risks, handoff, and read-next links. Move history to docs/LOG.md.",
+                    "Keep current phase, latest conclusion, next action, blockers, active risks, and handoff. Move process history to agentmemory or sparse fallback LOG.",
                     "medium",
                 )
             elif relative == "docs/LOG.md":
@@ -123,7 +117,7 @@ def plan(target: Path, profile: str) -> list[CompactionItem]:
                     "summarize-or-archive",
                     relative,
                     f"{relative} has {count} lines; budget is {budget}.",
-                    "Summarize routine completed history by month. Move old detail to docs/archive/ after developer confirmation.",
+                    "Summarize routine completed history. Prefer agentmemory for detailed process recall; keep only sparse checkpoints here.",
                     "medium",
                 )
             elif relative == "docs/DECISIONS.md":

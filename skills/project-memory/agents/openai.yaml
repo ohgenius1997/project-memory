@@ -1,4 +1,4 @@
 interface:
   display_name: "Project Memory"
-  short_description: "Agent-facing project memory docs"
-  default_prompt: "Use $project-memory to initialize or diagnose agent-facing project memory docs for this project."
+  short_description: "AGENTS-first context router"
+  default_prompt: "Use $project-memory to initialize or diagnose a lightweight AGENTS-first project context router for this project."

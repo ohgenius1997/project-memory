@@ -10,7 +10,7 @@
 ## Maintenance Rules
 - Use this file for cloud environments, deployment, infrastructure, and operations notes.
 - Do not store secrets.
-- Keep repository workflow in `REPOSITORY.md`.
+- Keep stable release routing in `AGENTS.md`; use `COORDINATION.md` only for active branch/session handoff.
 
 ## Environments
 - TBD

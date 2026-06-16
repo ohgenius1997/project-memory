@@ -12,6 +12,8 @@
 - Keep `Status: not active` for single-stream work.
 - Activate this file when work splits or handoff state matters.
 - Record collision zones before parallel editing begins.
+- AI may update only this session's own workstream/status unless the developer explicitly asks otherwise.
+- AI must not assign owners, lock or unlock other sessions' work, remove another session's handoff, or declare another session complete without confirmation.
 
 ## Status
 - Status: not active
@@ -40,3 +42,4 @@
 - Update after branch changes that affect active work.
 - Update before ending a session with incomplete work.
 - Update when ownership or dependencies change.
+- Treat shared owner/session changes as developer-confirmed changes, not routine checkpoint edits.

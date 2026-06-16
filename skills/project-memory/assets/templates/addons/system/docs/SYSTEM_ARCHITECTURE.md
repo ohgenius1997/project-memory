@@ -9,8 +9,8 @@
 
 ## Maintenance Rules
 - Use this file for durable system architecture and operational shape.
-- Keep git/GitHub rules in `REPOSITORY.md`.
-- Keep setup commands in `ENVIRONMENT.md`.
+- Keep stable routing and release rules in `AGENTS.md` unless governed coordination docs are needed.
+- Keep setup commands in `ENVIRONMENT.md` when governed profile is active.
 - Do not record daily progress here.
 
 ## System Overview

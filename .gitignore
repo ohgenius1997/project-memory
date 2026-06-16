@@ -16,3 +16,7 @@ dist/
 build/
 *.egg-info/
 *.log
+
+# Local project-memory dogfood state; not part of the reusable public skill.
+/PROJECT_STATUS.md
+/docs/

@@ -2,54 +2,32 @@
 
 ## Memory Metadata
 - owner: current-state-index
-- read_when: every new session, before project work, before handoff
-- update_when: phase, next action, blocker, risk, branch, or latest conclusion changes
-- max_lines: 150
-- stale_if: next action is completed, branch changes, blocker state changes, or major decision changes
+- read_when: continuing long-running work, before handoff, when AGENTS.md says current state is needed
+- update_when: phase, latest conclusion, next step, blocker, risk, or active branch changes
+- max_lines: 90
+- stale_if: next step is completed, blocker changes, or branch/workstream changes
 
 ## Maintenance Rules
-- Read this file first in every new session.
-- Keep this file short; target under 150 lines.
-- Update when current phase, latest conclusion, next step, or blocker changes.
-- Move historical detail to `docs/LOG.md`.
-- Source of truth for current state only; do not store long rationale here.
+- Keep this file short and current-state only.
+- Do not store chronological history, debug attempts, or ordinary failures here.
+- Put durable rationale in `docs/DECISIONS.md`.
+- Put episodic process memory in agentmemory; use `docs/LOG.md` only as a sparse fallback if present.
 
 ## Current Snapshot
 - Project: {{PROJECT_NAME}}
 - Kind: {{PROJECT_KIND}}
 - Domain: {{DOMAIN}}
-- Initialized: {{DATE}}
+- Profile: {{PROFILE}}
+- Dynamic memory: {{DYNAMIC_MEMORY}}
 - Current phase: initialization
-- Latest conclusion: Project memory docs have been initialized for agent-facing context recovery.
-- Next step: Replace placeholders with project-specific details and begin project work.
-- Blockers: none recorded
 - Current branch: TBD
-- Active risks: none recorded
-
-## Changed Since Last Checkpoint
-- Initialized project memory docs.
-
-## Read Next
-- Continue implementation: `docs/PRINCIPLES.md`, `docs/PLAN.md`
-- Change direction: `docs/DECISIONS.md`
-- Setup/build work: `docs/ENVIRONMENT.md`
-- Substantial code generation: `docs/VIBE_READINESS.md`
-- Git/GitHub work: `docs/REPOSITORY.md`
-- Domain context: `docs/DOMAIN.md` if present
-- Feature tracks: `docs/TRACKS.md` if present
+- Latest conclusion: AGENTS-first project context routing has been initialized.
+- Next step: Fill the project goal in `AGENTS.md` and start project work.
+- Blockers: none recorded
+- Active risks: placeholders still need project-specific content
 
 ## Handoff
-- Last completed: initialized project memory docs
-- In progress: fill project-specific placeholders
+- Last completed: initialized project context router
+- In progress: fill stable project facts
 - Validation done: initial files generated
-- Known risks: placeholders still need project-specific content
-
-## Important Links
-- Principles: `docs/PRINCIPLES.md`
-- Plan: `docs/PLAN.md`
-- Decisions: `docs/DECISIONS.md`
-- Environment: `docs/ENVIRONMENT.md`
-- Repository: `docs/REPOSITORY.md`
-- Coordination: `docs/COORDINATION.md`
-- Tracks: `docs/TRACKS.md` if present
-- Log: `docs/LOG.md`
+- Known risks: none recorded

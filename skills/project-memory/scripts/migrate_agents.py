@@ -10,11 +10,11 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 
 
-AGENTS_BUDGET = 140
+AGENTS_BUDGET = 90
 
 TARGET_RULES = [
     (
-        "docs/VIBE_READINESS.md",
+        "AGENTS.md",
         [
             "permission",
             "boundary",
@@ -63,7 +63,7 @@ TARGET_RULES = [
         ],
     ),
     (
-        "docs/REPOSITORY.md",
+        "docs/COORDINATION.md",
         [
             "git",
             "github",
@@ -125,7 +125,7 @@ TARGET_RULES = [
         ],
     ),
     (
-        "docs/PLAN.md",
+        "PROJECT_STATUS.md",
         [
             "plan",
             "roadmap",
@@ -140,7 +140,7 @@ TARGET_RULES = [
         ],
     ),
     (
-        "docs/PRINCIPLES.md",
+        "AGENTS.md",
         [
             "principle",
             "rule",
@@ -168,7 +168,7 @@ TARGET_RULES = [
         ],
     ),
     (
-        "docs/CONTEXT.md",
+        "AGENTS.md",
         [
             "context",
             "background",
@@ -183,12 +183,13 @@ TARGET_RULES = [
 ]
 
 KEEP_KEYWORDS = [
-    "default read order",
+    "context routing",
     "task-based read paths",
-    "source of truth",
+    "memory ownership",
     "update triggers",
     "context budget warnings",
     "project context",
+    "agentmemory",
     "read ",
     "read `",
     "before starting",
@@ -206,24 +207,36 @@ KEEP_KEYWORDS = [
 ]
 
 KEEP_HEADINGS = {
+    "# agent context router",
     "# agent operating rules",
     "## memory metadata",
     "## maintenance rules",
-    "## default read order",
+    "## project",
+    "## goal",
+    "## context routing",
     "## task-based read paths",
-    "## source of truth",
+    "## memory ownership",
+    "## checkpoint rules",
+    "## ai boundaries",
+    "## upgrade signals",
     "## update triggers",
     "## context budget warnings",
     "## project context",
 }
 
 STANDARD_SECTION_MAX_LINES = {
+    "# agent context router": 3,
     "# agent operating rules": 3,
     "## memory metadata": 7,
     "## maintenance rules": 7,
-    "## default read order": 12,
+    "## project": 9,
+    "## goal": 5,
+    "## context routing": 12,
     "## task-based read paths": 12,
-    "## source of truth": 14,
+    "## memory ownership": 14,
+    "## checkpoint rules": 8,
+    "## ai boundaries": 8,
+    "## upgrade signals": 5,
     "## update triggers": 10,
     "## context budget warnings": 8,
     "## project context": 8,

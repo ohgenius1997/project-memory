@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Print a short, read-only project memory brief."""
+"""Print a short, read-only AGENTS-first project context brief."""
 
 from __future__ import annotations
 
@@ -21,6 +21,11 @@ FIELD_PATTERNS = {
     "risks": r"^- Active risks:\s*(.+)$",
 }
 
+AGENTS_PATTERNS = {
+    "profile": r"^- Profile:\s*(.+)$",
+    "dynamic_memory": r"^- Dynamic memory:\s*(.+)$",
+}
+
 
 def read(path: Path) -> str:
     try:
@@ -38,22 +43,39 @@ def extract_fields(status_text: str) -> dict[str, str]:
     return fields
 
 
+def extract_agents_fields(agents_text: str) -> dict[str, str]:
+    fields: dict[str, str] = {}
+    for key, pattern in AGENTS_PATTERNS.items():
+        match = re.search(pattern, agents_text, re.MULTILINE)
+        if match:
+            fields[key] = match.group(1).strip()
+    for key, label in [
+        ("project", "Name"),
+        ("kind", "Kind"),
+        ("domain", "Domain"),
+    ]:
+        match = re.search(rf"^-\s*{label}:\s*(.+)$", agents_text, re.MULTILINE)
+        if match:
+            fields[key] = match.group(1).strip()
+    return fields
+
+
 def file_exists(target: Path, relative: str) -> bool:
     return (target / relative).exists()
 
 
 def recommended_reads(target: Path, fields: dict[str, str]) -> list[str]:
-    reads = ["PROJECT_STATUS.md", "docs/PRINCIPLES.md", "docs/PLAN.md"]
+    reads = ["AGENTS.md"]
+    if file_exists(target, "PROJECT_STATUS.md"):
+        reads.append("PROJECT_STATUS.md")
     text = " ".join(fields.values()).lower()
 
-    if any(word in text for word in ["implement", "refactor", "broad", "feature", "code"]):
-        reads.append("docs/VIBE_READINESS.md")
     if any(word in text for word in ["decision", "architecture", "direction", "rationale"]):
         reads.append("docs/DECISIONS.md")
     if any(word in text for word in ["setup", "dependency", "runtime", "environment", "build", "test"]):
         reads.append("docs/ENVIRONMENT.md")
     if any(word in text for word in ["git", "github", "branch", "remote", "release", "push", "pr"]):
-        reads.append("docs/REPOSITORY.md")
+        reads.append("docs/COORDINATION.md")
     if file_exists(target, "docs/COORDINATION.md"):
         coordination = read(target / "docs/COORDINATION.md")
         if "Status: active" in coordination:
@@ -62,8 +84,6 @@ def recommended_reads(target: Path, fields: dict[str, str]) -> list[str]:
         word in text for word in ["track", "feature", "milestone", "workstream"]
     ):
         reads.append("docs/TRACKS.md")
-    if file_exists(target, "docs/DOMAIN.md"):
-        reads.append("docs/DOMAIN.md")
 
     result: list[str] = []
     for item in reads:
@@ -72,39 +92,22 @@ def recommended_reads(target: Path, fields: dict[str, str]) -> list[str]:
     return result
 
 
-def projectmem_distilled_files(target: Path) -> list[str]:
-    root = target / ".projectmem"
-    if not root.exists():
-        return []
-    candidates: list[Path] = []
-    for pattern in ["**/summary*.md", "**/PROJECT_MAP.md", "**/AI_INSTRUCTIONS.md", "**/project_map*.md"]:
-        candidates.extend(path for path in root.glob(pattern) if path.is_file())
-    return sorted({str(path.relative_to(target)) for path in candidates})[:8]
-
-
 def external_memory(target: Path) -> list[str]:
     notes: list[str] = []
-    if (target / ".projectmem").exists():
-        distilled = projectmem_distilled_files(target)
-        if distilled:
-            notes.append(
-                "projectmem detected: use dynamic event summaries/precheck; distilled files: "
-                + ", ".join(distilled)
-            )
-        else:
-            notes.append(
-                "projectmem detected: use its CLI/MCP summary and precheck; do not read raw event logs by default"
-            )
-    if (target / "conductor").exists():
-        notes.append(
-            "conductor detected: external static context directory present; project-memory does not parse or migrate it by default"
-        )
+    agents = read(target / "AGENTS.md")
+    mode = extract_agents_fields(agents).get("dynamic_memory", "")
+    if mode == "agentmemory":
+        notes.append("agentmemory recommended: use relevant episodic memory for attempts, failures, file-level gotchas, and session continuity")
+    elif mode == "none":
+        notes.append("no dynamic memory declared: use sparse docs/LOG.md checkpoint fallback only if present")
     return notes
 
 
 def build_brief(target: Path) -> dict[str, object]:
+    agents_text = read(target / "AGENTS.md")
     status_text = read(target / "PROJECT_STATUS.md")
-    fields = extract_fields(status_text)
+    fields = extract_agents_fields(agents_text)
+    fields.update(extract_fields(status_text))
     return {
         "target": str(target),
         "status": fields,
@@ -123,6 +126,8 @@ def print_markdown(brief: dict[str, object]) -> None:
         for label, key in [
             ("Project", "project"),
             ("Kind", "kind"),
+            ("Profile", "profile"),
+            ("Dynamic memory", "dynamic_memory"),
             ("Phase", "phase"),
             ("Branch", "branch"),
             ("Latest", "latest"),

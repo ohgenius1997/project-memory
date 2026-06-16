@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Read-only project shape inspection for project-memory initialization."""
+"""Read-only project shape inspection for AGENTS-first project-memory initialization."""
 
 from __future__ import annotations
 
@@ -35,13 +35,8 @@ INTERESTING_FILES = [
 PROJECT_MEMORY_FILES = {
     "AGENTS.md",
     "PROJECT_STATUS.md",
-    "docs/CONTEXT.md",
-    "docs/PRINCIPLES.md",
-    "docs/PLAN.md",
-    "docs/VIBE_READINESS.md",
     "docs/DECISIONS.md",
     "docs/ENVIRONMENT.md",
-    "docs/REPOSITORY.md",
     "docs/LOG.md",
     "docs/COORDINATION.md",
 }
@@ -173,7 +168,7 @@ def recommended_addons(target: Path, languages: list[str]) -> list[str]:
 
     if (target / "SKILL.md").exists() or (target / "skills").exists():
         addons.add("skill")
-    if (target / "docs").exists() or files_matching(target, ["**/*.md"]):
+    if (target / "docs").exists():
         addons.add("docs")
     if "node" in languages and any(name in dependency_text for name in ["react", "next", "vite", "vue", "svelte"]):
         addons.add("web")
@@ -194,9 +189,29 @@ def recommended_addons(target: Path, languages: list[str]) -> list[str]:
         addons.add("cloud")
     if any((target / relative).exists() for relative in ["docs/HANDOFF.md", "docs/ROADMAP.md"]):
         addons.add("tracks")
-    if not addons:
-        addons.add("system")
     return sorted(addons)
+
+
+def recommended_profile(target: Path) -> str:
+    if (target / "docs" / "COORDINATION.md").exists() or (target / "docs" / "ENVIRONMENT.md").exists():
+        return "governed"
+    if (target / "PROJECT_STATUS.md").exists() or (target / "docs" / "DECISIONS.md").exists():
+        return "standard"
+    branch_count = len(git_lines(target, ["branch", "--format=%(refname:short)"]))
+    has_setup = any((target / relative).exists() for relative in [
+        "package.json",
+        "pyproject.toml",
+        "requirements.txt",
+        "Package.swift",
+        "go.mod",
+        "Cargo.toml",
+        "Dockerfile",
+    ])
+    if branch_count > 1 or has_setup and (target / ".github" / "workflows").exists():
+        return "governed"
+    if legacy_context_sources(target):
+        return "standard"
+    return "minimal"
 
 
 def project_name(target: Path) -> str:
@@ -241,25 +256,21 @@ def inspect(target: Path) -> dict[str, object]:
         "pyproject": python_scripts(target),
     }
     existing_memory = {
-        "project_memory": (target / "PROJECT_STATUS.md").exists() or (target / "docs" / "PLAN.md").exists(),
+        "agents_router": (target / "AGENTS.md").exists(),
+        "project_status": (target / "PROJECT_STATUS.md").exists(),
+        "decisions": (target / "docs" / "DECISIONS.md").exists(),
         "legacy_context": bool(legacy_sources),
-        "projectmem": (target / ".projectmem").exists(),
-        "conductor": (target / "conductor").exists(),
     }
     recommendations: list[str] = []
-    repository_doc = read_text(target / "docs" / "REPOSITORY.md").lower()
-    if existing_memory["conductor"] and not existing_memory["project_memory"]:
-        recommendations.append(
-            "Target contains conductor/. Treat it as an external static context directory; project-memory does not parse or migrate it by default."
-        )
-    if not existing_memory["project_memory"]:
-        recommendations.append("Initialize project-memory core docs, then fill current status and Vibe readiness.")
+    profile = recommended_profile(target)
+    if not existing_memory["agents_router"]:
+        recommendations.append(f"Initialize project-memory with --profile {profile}; default minimal creates only AGENTS.md.")
     if legacy_sources:
-        recommendations.append("Plan Existing Context Migration for legacy docs before copying details into project-memory files.")
-    if workflows and not any(marker in repository_doc for marker in ["ci:", "github actions", "workflow"]):
-        recommendations.append("Record CI and release rules in docs/REPOSITORY.md.")
+        recommendations.append("Plan Existing Context Migration before copying stable rules/current state into AGENTS.md or standard docs.")
+    if workflows:
+        recommendations.append("Use governed profile if CI/release workflow needs stable environment or coordination notes.")
     if languages:
-        recommendations.append("Record required/tested runtime versions in docs/VIBE_READINESS.md and docs/ENVIRONMENT.md.")
+        recommendations.append("Keep runtime/version facts in AGENTS.md only if short; use governed ENVIRONMENT.md when setup becomes cross-device or fragile.")
 
     return {
         "target": str(target),
@@ -274,6 +285,7 @@ def inspect(target: Path) -> dict[str, object]:
         "legacy_context_sources": legacy_sources,
         "scripts": scripts,
         "existing_memory": existing_memory,
+        "recommended_profile": profile,
         "recommended_addons": recommended_addons(target, languages),
         "recommendations": recommendations,
     }
@@ -287,6 +299,7 @@ def print_markdown(result: dict[str, object]) -> None:
     git = result["git"]
     assert isinstance(git, dict)
     print(f"- Git branch: `{git.get('branch') or 'unknown'}`")
+    print(f"- Recommended profile: `{result['recommended_profile']}`")
 
     for title, key in [
         ("Languages", "languages"),

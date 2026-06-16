@@ -2,24 +2,24 @@
 
 ## Memory Metadata
 - owner: durable-decisions-and-rationale
-- read_when: changing direction, explaining why, resolving conflicts, compacting history
+- read_when: changing architecture, product direction, workflow policy, or explaining why
 - update_when: durable technical, product, workflow, or operational decisions are made
-- max_lines: 350
-- stale_if: major decisions are superseded without being marked superseded
+- max_lines: 260
+- stale_if: accepted decisions are superseded without a new entry
 
 ## Maintenance Rules
-- Add an entry for durable technical, product, workflow, or operational decisions.
-- Each entry should include date, decision, rationale, and consequences.
-- Include alternatives considered when they may matter later.
-- Do not use this file for daily progress logs.
+- Record only durable decisions future sessions must honor.
+- Include decision, rationale, alternatives, and consequences.
+- Do not record ordinary attempts, transient failures, or daily progress.
+- Prefer agentmemory for episodic process history.
 
 ## Decision Index
-- {{DATE}} - Initialize agent-facing project memory
+- {{DATE}} - Use AGENTS-first project context routing
 
 ## Decision Log
 
-### {{DATE}} - Initialize agent-facing project memory
-- Decision: Use a lightweight project memory system for future Codex sessions.
-- Rationale: Future sessions need fast context recovery and consistent operating rules.
-- Consequences: Keep current state in `PROJECT_STATUS.md`, durable decisions here, and chronological detail in `LOG.md`.
-- Alternatives considered: conventional external-facing docs; rejected because this system optimizes for agent context recovery.
+### {{DATE}} - Use AGENTS-first project context routing
+- Decision: Keep stable operating rules in `AGENTS.md` and use project-memory docs only for stable facts that should be audited or resumed across sessions.
+- Rationale: Agents need a short always-on router more than a large documentation tree.
+- Alternatives considered: full multi-document project memory by default; rejected because it increases context and maintenance cost for lightweight projects.
+- Consequences: Dynamic attempts and session history should be handled by agentmemory; only current state and durable decisions belong in project-memory docs.

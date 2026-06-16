@@ -1,286 +1,139 @@
 ---
 name: project-memory
-description: Initialize, diagnose, migrate, compact-plan, and maintain lightweight agent-facing project memory docs for coding projects. Use when the user asks to initialize project documentation, manage project memory, recover context, create agent runbooks, record project principles, progress logs, environment notes, repository rules, coordination docs, handoff notes, Vibe Coding readiness checks, AGENTS.md migration plans, context-budget compaction planning, or cross-device/project-state sync checks for software, skill, app, data, docs, system, or agent projects.
+description: AGENTS-first project context router and lightweight governance bootstrap for AI-assisted coding projects. Use when the user asks to initialize or maintain AGENTS.md project context, create a project memory/router, set up agent-facing rules, diagnose context bloat, recommend minimal/standard/governed profile upgrades, coordinate with agentmemory, migrate long AGENTS/CLAUDE/README/docs context, propose PROJECT_STATUS.md syncs, or manage current-state/decision/environment/coordination docs for Codex or other coding agents.
 ---
 
 # Project Memory
 
 ## Core Contract
 
-Create and maintain a project memory layer for future Codex sessions. Optimize for selective loading, fast context recovery, consistent project rules, safe cross-session execution, and low-maintenance progress tracking. Do not optimize for public-facing completeness.
+Create a lightweight AGENTS-first router, not a full memory runtime.
 
-Use this skill in developer-triggered workflows only. Do not silently rewrite project memory, archive content, delete historical context, or change durable decisions without explicit developer confirmation.
+Optimize for:
+- little always-on context
+- strong task-based routing
+- weak ceremony
+- dynamic/episodic memory outsourced to agentmemory
 
-## Default Read Order
+Do not build or maintain a large Markdown documentation system by default. Do not install agentmemory, run global hooks, create MCP servers, or implement vector/episodic memory. Recommend agentmemory as the single dynamic-memory companion and document the ownership split.
 
-When resuming a project with this documentation system, read:
+## Profiles
 
-1. `PROJECT_STATUS.md`
-2. `docs/PRINCIPLES.md`
-3. `docs/PLAN.md`
-4. `docs/VIBE_READINESS.md` before substantial code generation or large refactors
-5. `docs/DECISIONS.md` when changing direction or explaining prior choices
-6. `docs/ENVIRONMENT.md` when setup, build, runtime, or cross-device work is involved
-7. `docs/REPOSITORY.md` when git, GitHub, branches, releases, or remotes are involved
-8. `docs/COORDINATION.md` when parallel sessions, branches, agents, devices, or handoffs are involved
-9. `docs/TRACKS.md` when feature tracks or larger work units are active
-10. `docs/LOG.md` only when historical detail is needed
+Use the smallest profile that fits the project.
 
-When available, run `scripts/brief_memory.py --target /path/to/project` first to get a short current-state brief and task-based read recommendations.
+- `minimal` (default): `AGENTS.md` only. Use for small projects, exploration, or projects with agentmemory.
+- `standard`: `AGENTS.md`, `PROJECT_STATUS.md`, `docs/DECISIONS.md`. Use when current state and durable decisions must survive sessions.
+- `governed`: standard plus `docs/ENVIRONMENT.md`, `docs/COORDINATION.md`. Use only for cross-device setup, multiple branches, multiple sessions, or handoff.
 
-## Task-Based Read Paths
+Never auto-upgrade profiles. Diagnose complexity and recommend an upgrade with rationale, added files, and maintenance cost. Apply the upgrade only after developer confirmation.
 
-Use the smallest read set that can safely answer the task:
+## Read Rules
 
-- Continue implementation: `PROJECT_STATUS.md`, `docs/PRINCIPLES.md`, `docs/PLAN.md`
-- Start broad code generation or large refactor: add `docs/VIBE_READINESS.md`
-- Change direction or architecture: add `docs/DECISIONS.md`
-- Work on setup, build, dependencies, or devices: add `docs/ENVIRONMENT.md`
-- Work on git, GitHub, release, or branches: add `docs/REPOSITORY.md`
-- Handle parallel work, handoff, or long-running tasks: add `docs/COORDINATION.md`
-- Work on an active feature track or multi-step milestone: add `docs/TRACKS.md` if present
-- Need business/domain terms or user mental model: add `docs/DOMAIN.md` if present
-- Need historical reasoning: read `docs/LOG.md` selectively
-- Project has `.projectmem/`: treat projectmem as dynamic event memory; use summaries/precheck results, not raw event logs
-- Project has `conductor/`: treat it as an external static context system and conflict signal; do not parse, migrate, or maintain Conductor-specific files
-- Diagnose or compact project memory: read all memory docs, then report findings before patching
+Start with `AGENTS.md`. It is the always-on router.
 
-## Workflows
+Then use the smallest task-specific context:
+- Ordinary development: `AGENTS.md` plus agentmemory relevant memory if available.
+- Continue long-running work: add `PROJECT_STATUS.md` if present.
+- Change architecture, product direction, or workflow policy: add `docs/DECISIONS.md` if present.
+- Work on dependencies, setup, CI, build, runtime, or cross-device assumptions: add `docs/ENVIRONMENT.md` if present.
+- Handle multi-session, multi-branch, owner, collision, or handoff state: add `docs/COORDINATION.md` if present.
+- Need historical process context: use agentmemory; read `docs/LOG.md` only as sparse fallback if present.
 
-### Brief
+Before mutating repository files, consult `AGENTS.md` and identify the context sources used in a progress update or final response. Keep this acknowledgement concise.
 
-Use `scripts/brief_memory.py --target /path/to/project` at the start of a session or before a handoff. It is read-only and prints current phase, latest conclusion, next step, blockers, risks, recommended files to read, and detected external memory systems.
+## Initialize
 
-### Inspect
-
-Use `scripts/inspect_project.py --target /path/to/project` before initializing memory for an existing codebase or when the user gives only a broad project description. It is read-only and reports detected languages, config files, candidate commands, existing memory systems, and recommended addons.
-
-Use inspection as input, not as truth. Confirm ambiguous ownership choices with the developer, especially when existing docs, long `AGENTS.md` files, or external static context directories such as `conductor/` already exist.
-
-### Initialize
-
-Use `scripts/init_docs.py` to generate a small core plus selected addons:
+Use `scripts/init_docs.py`.
 
 ```bash
-python3 scripts/init_docs.py --target /path/to/project --project-name "Project Name" --project-kind "ios app" --domain "pin bead pattern generation"
+python3 scripts/init_docs.py \
+  --target /path/to/project \
+  --project-name "My Project" \
+  --project-kind "ios app" \
+  --domain "pin bead pattern generation"
 ```
 
-Default behavior never overwrites existing files. Use `--force` only when the developer explicitly asks to regenerate or replace docs.
+Defaults:
+- `--profile minimal`
+- `--dynamic-memory agentmemory`
+- no addons
+- no overwrite of existing files
 
-If the user gives only natural language, infer addons conservatively from project shape and platform/runtime:
-
-- Project shape addons: `skill`, `app`, `system`, `library`, `docs`, `data-ai`
-- Platform/runtime addons: `web`, `ios`, `cli`, `cloud`
-- Context addons: `domain`, `tracks`
-
-Do not create domain-specific addons such as `billing`, `medical`, or `inventory`. Business or technical domain knowledge belongs in `docs/DOMAIN.md`, `docs/CONTEXT.md`, `docs/PLAN.md`, or project-shape docs.
-
-Always include core docs. Add only relevant addons; do not generate comprehensive docs for hypothetical future needs.
-
-If a target already contains `conductor/`, `init_docs.py` stops by default. This is conflict protection only. Do not parse, migrate, or adapt Conductor files. Continue with `--allow-conductor` only if the developer explicitly chooses to proceed with project-memory despite the external static context directory.
-
-### Resume
-
-Read the default files in order. Summarize current phase, durable decisions, active constraints, next action, and any stale or missing context before doing project work.
-
-If `.projectmem/` exists, also consult projectmem summary/recent/precheck through its available CLI or MCP tools. Do not read raw event logs unless the developer explicitly asks for forensic detail.
-
-When available, prefer the read-only bridge:
+Useful variants:
 
 ```bash
-python3 scripts/memory_bridge.py detect --target /path/to/project
-python3 scripts/memory_bridge.py summary --target /path/to/project
-python3 scripts/memory_bridge.py precheck path/to/file --target /path/to/project
+python3 scripts/init_docs.py --target /path/to/project --profile standard
+python3 scripts/init_docs.py --target /path/to/project --profile governed
+python3 scripts/init_docs.py --target /path/to/project --dynamic-memory none --profile standard
 ```
 
-If `conductor/` exists, do not treat it as project-memory input. Ask the developer whether to continue despite the external static context directory.
+Use `--fallback-log` only when the developer wants sparse checkpoint history without agentmemory. Use `--force` only after explicit confirmation.
 
-### Checkpoint
+## Checkpoint
 
-Update docs during normal work when the current state changes:
+Update project-memory docs only when stable facts change.
 
-- `PROJECT_STATUS.md`: current phase, latest conclusion, next step, blockers
-- `docs/LOG.md`: chronological progress details
-- `docs/DECISIONS.md`: durable product, architecture, workflow, or operational decisions
-- `docs/VIBE_READINESS.md`: product goal, stack/runtime, conventions, core contracts, red lines, AI permission boundaries
-- `docs/ENVIRONMENT.md`: dependency, setup, version, path, or cross-device changes
-- `docs/REPOSITORY.md`: branch, remote, GitHub, release, or generated-file rules
-- `docs/COORDINATION.md`: active workstreams, handoffs, collision zones
-- `docs/TRACKS.md`: active feature tracks, track status, last updated date, and next step
+- `AGENTS.md`: routing, stable operating rules, AI boundaries, and dynamic-memory ownership.
+- `PROJECT_STATUS.md`: current phase, latest conclusion, next step, blockers, branch, and active risks.
+- `docs/DECISIONS.md`: durable decisions, rationale, alternatives, and consequences.
+- `docs/ENVIRONMENT.md`: stable setup, dependencies, CI, device, runtime, or cross-machine facts.
+- `docs/COORDINATION.md`: active multi-session or multi-branch handoff/collision state.
+- `docs/LOG.md`: sparse checkpoint fallback only when agentmemory is unavailable.
 
-Keep `PROJECT_STATUS.md` short. Move history into `docs/LOG.md`.
+Do not write ordinary attempts, transient failures, debugging traces, file-level gotchas, or session transcripts into project-memory docs. Those belong in agentmemory.
 
-### Diagnose
+## Diagnose
 
-Use `scripts/diagnose_memory.py --target /path/to/project` for a read-only health check. Diagnose missing files, stale dates, missing maintenance rules, oversized status files, inactive coordination with multiple branches, and incomplete environment/repository notes.
+Use `scripts/diagnose_memory.py --target /path/to/project` for read-only health checks.
 
-Use `scripts/diagnose_memory.py --target /path/to/project --context-gate` before broad implementation, large refactors, or active track work. Context Gate adds stricter checks for current status fields and active track next steps.
+It should report:
+- missing required files for the detected profile
+- oversized or history-heavy `AGENTS.md`
+- missing agentmemory ownership split
+- `PROJECT_STATUS.md` acting like a log
+- `docs/LOG.md` overuse when agentmemory is declared
+- minimal-to-standard or standard-to-governed upgrade signals
+- coordination state that may need activation
 
-Report findings first. Apply patches only when the fix is routine and clearly implied, or after developer confirmation when meaning is ambiguous.
+Use `--context-gate` before broad implementation or handoff. Context Gate warns; it does not block the developer's request by itself.
 
-If any doc exceeds its context budget, explicitly recommend running compact. Do not compact automatically.
+## Status Sync Proposal
 
-If `AGENTS.md` exceeds its context budget, recommend `migrate-agents` instead of ordinary compaction because `AGENTS.md` is always-on context.
-
-If `.projectmem/` exists but the routing rules do not mention projectmem, recommend documenting the split: project-memory owns stable governance, projectmem owns dynamic events and precheck hints.
-
-If both `conductor/` and project-memory docs exist, warn that another static context system is present. project-memory does not parse, migrate, or synchronize `conductor/`.
-
-### Vibe Readiness
-
-Use `docs/VIBE_READINESS.md` as the readiness gate before large AI-assisted implementation. It should capture:
-
-- One-sentence product goal: user, problem, success standard
-- Stack/runtime: required, tested, preferred, and unknown versions
-- Project structure and coding conventions
-- Core models and contracts: domain model, API, config/schema, state model, file formats
-- Development red lines: security, performance, error handling, privacy, compatibility
-- AI permission boundaries: direct edits, plan-first areas, confirmation gates, forbidden actions, human review areas
-
-This is not a requirement that every detail be finalized before exploration. Unknowns must be explicit so future sessions do not treat guesses as facts.
-
-### Context Gate
-
-Before broad implementation, large refactors, or work on a new feature track, verify:
-
-- Product goal, success standard, stack/runtime, core contracts, red lines, and AI boundaries are current in `docs/VIBE_READINESS.md`
-- `PROJECT_STATUS.md` next step matches the intended work
-- Relevant durable decisions have been read from `docs/DECISIONS.md`
-- Environment and repository rules are current when tooling, dependencies, CI, release, or branches are involved
-- If `.projectmem/` exists, recent failures and precheck results have been considered
-- If `conductor/` exists, the developer has explicitly chosen to proceed despite an external static context directory
-
-Context Gate produces warnings and update recommendations. It should not block the developer's request by itself.
-
-Prefer the scripted gate when available:
+Use `scripts/status_sync_proposal.py` to propose, not apply, `PROJECT_STATUS.md` updates.
 
 ```bash
-python3 scripts/diagnose_memory.py --target /path/to/project --context-gate
+python3 scripts/status_sync_proposal.py --target /path/to/project
+python3 scripts/status_sync_proposal.py --target /path/to/project --agentmemory-summary summary.md
 ```
 
-### Tracks
+If agentmemory output is available, pass a summary file or `--agentmemory-summary -` via stdin. If not, the script falls back to git state and sparse `docs/LOG.md`. Apply the suggested status fields only after developer confirmation.
 
-Use `docs/TRACKS.md` only when work is too large for a single `PROJECT_STATUS.md` next step. Tracks are optional and should remain an index, not a second project plan.
+## Migration
 
-Recommended split:
+Use read-only planners first.
 
-- `PROJECT_STATUS.md`: global current phase, latest conclusion, next step, blockers, active risks
-- `docs/PLAN.md`: accepted project-level approach and milestone order
-- `docs/TRACKS.md`: active/blocked/done feature tracks, owner/session, spec link, plan link, last updated, next step
-- `docs/tracks/<id>/SPEC.md`: local requirement, acceptance, dependencies, open questions
-- `docs/tracks/<id>/PLAN.md`: local execution plan and validation checklist
+- `scripts/migrate_agents.py`: classify long `AGENTS.md` content into keep/move/review buckets.
+- `scripts/migrate_context.py`: classify README, CLAUDE.md, old docs, TODOs, roadmaps, and handoff notes.
+- `scripts/compact_memory.py`: propose compaction; never compact automatically.
 
-Do not create tracks for every small task. Add tracks when multiple sessions, branches, feature areas, or multi-day work units need separate state.
+Migration target:
+- keep `AGENTS.md` short as the router
+- move current state to `PROJECT_STATUS.md`
+- move durable decisions to `docs/DECISIONS.md`
+- move setup/coordination facts only when governed profile is justified
+- route process history to agentmemory or sparse fallback `docs/LOG.md`
 
-### Projectmem Interop
+## Coordination Boundary
 
-Use projectmem as an optional dynamic event layer, not a replacement for project-memory docs.
-
-- project-memory owns stable project governance: current status, principles, plans, durable decisions, environment, repository, coordination, and AI boundaries
-- projectmem owns dynamic events: issues, attempts, fixes, file-level gotchas, and precheck hints
-- Treat projectmem precheck as risk input. It may require explaining mitigation or changing approach, but it must not be the sole reason to refuse a user request
-- At session end, use recent projectmem events to check whether `PROJECT_STATUS.md` is stale; summarize only durable current state, not every event
-- Do not hand-edit projectmem raw event logs
-
-### External Static Context Detection
-
-Treat `conductor/` from context-driven-development as an external static context directory and conflict signal, not a compatibility target or default companion layer.
-
-When `conductor/` exists:
-
-1. Do not generate overlapping project-memory docs by default.
-2. Do not parse, migrate, synchronize, or adapt Conductor-specific files.
-3. Ask whether the developer wants to proceed with project-memory despite the existing external static context directory.
-4. If proceeding, keep migration logic generic: existing `AGENTS.md`, README, old docs, roadmaps, changelogs, and user-specified notes can be classified into project-memory docs.
-
-### Compact
-
-Use `scripts/compact_memory.py --target /path/to/project` to produce a compaction plan. The script must not modify files.
-
-Compaction is always two-step:
-
-1. Present strategy: keep, summarize, archive, trim, do-not-change, risk.
-2. Apply changes only after developer confirmation.
-
-Preserve durable conclusions, accepted decisions, current plan, global principles, environment rules, repository rules, unresolved risks, and rationale for major decisions. Prefer moving historical detail to logs or archive notes over deletion.
-
-Compact by information ownership, not just length:
-
-- Always-on operating rules belong in `AGENTS.md`
-- Current state belongs in `PROJECT_STATUS.md`
-- Durable rules belong in `docs/PRINCIPLES.md`
-- AI readiness, red lines, and AI permission boundaries belong in `docs/VIBE_READINESS.md`
-- Current plan belongs in `docs/PLAN.md`
-- Accepted decisions and alternatives belong in `docs/DECISIONS.md`
-- Domain knowledge belongs in `docs/DOMAIN.md`
-- Recent history belongs in `docs/LOG.md`
-- Old history belongs in `docs/archive/`
-
-### Handoff And Coordination
-
-`docs/COORDINATION.md` is created by default with `Status: not active`. Activate it when work splits across sessions, branches, agents, devices, or long-running tasks.
-
-Record workstreams, owners/sessions, branches, touched areas, dependencies, handoff status, and collision zones. Use it to prevent two sessions from editing the same project surface blindly.
-
-### AGENTS.md Migration
-
-Use `scripts/migrate_agents.py --target /path/to/project` when an existing `AGENTS.md` is long or contains project context that belongs in `docs/`.
-
-The script is read-only. It produces a migration plan with:
-
-- Keep in `AGENTS.md`: always-on operating rules and routing
-- Move to docs: principles, environment, repository, coordination, decisions, logs, domain/context, vibe readiness
-- Needs review: ambiguous or high-risk content
-
-After developer confirmation, the agent may apply patches according to the plan, then run diagnosis. The preferred final state is a short `AGENTS.md` plus detailed source-of-truth docs. Snippet files are only a fallback when the developer does not allow editing the existing `AGENTS.md`.
-
-### Existing Context Migration
-
-Use existing-context migration for brownfield projects that already have useful project context in `AGENTS.md`, README, old docs, TODO files, roadmaps, changelogs, handoff notes, or developer-specified documents.
-
-When available, start with the read-only planner:
-
-```bash
-python3 scripts/migrate_context.py --target /path/to/project
-```
-
-The migration target is the project-memory source-of-truth set:
-
-- always-on operating rules: `AGENTS.md`
-- current state: `PROJECT_STATUS.md`
-- current plan: `docs/PLAN.md`
-- durable decisions: `docs/DECISIONS.md`
-- environment/setup facts: `docs/ENVIRONMENT.md`
-- repository/release facts: `docs/REPOSITORY.md`
-- coordination/handoff facts: `docs/COORDINATION.md`
-- chronological history: `docs/LOG.md`
-- domain terms: `docs/DOMAIN.md` when present
-
-This is an open-ended classification workflow, not compatibility with any specific third-party context framework. Do not special-case Conductor beyond detecting the directory and warning about potential static-context overlap.
-
-## Safety Rules
-
-- Do not store secrets in generated docs.
-- Do not replace existing docs unless `--force` or explicit developer confirmation is present.
-- Do not delete, archive, or compact durable decisions without confirmation.
-- Do not make `PROJECT_STATUS.md` a long history log.
-- Do not make `AGENTS.md` a project memory warehouse; keep it as a short always-on router.
-- Prefer fewer high-signal files over comprehensive documentation hierarchies.
-- Treat generated docs as source-of-truth ownership boundaries: put each fact in the file whose maintenance rules own it.
-- Keep docs within their context budgets. Warn the developer and recommend compact when docs exceed budget or mix stale history with current state.
-- Separate known facts, decisions, assumptions, open questions, and risks when recording non-trivial context.
-- Do not maintain two static context systems without explicit source-of-truth ownership.
-- Do not let external memory warnings become automatic refusal criteria.
+In `docs/COORDINATION.md`, an agent may update only its own session/workstream state unless the developer asks otherwise. Do not assign owners, lock or unlock another session's work, remove another session's handoff, or declare another session complete without confirmation.
 
 ## Resources
 
-- `assets/templates/`: core and addon documentation templates.
-- `scripts/init_docs.py`: initialize docs from templates.
-- `scripts/inspect_project.py`: read-only existing project shape inspection and addon recommendation.
-- `scripts/brief_memory.py`: read-only current-state brief and read-path recommendation.
-- `scripts/diagnose_memory.py`: read-only documentation health diagnosis.
-- `scripts/memory_bridge.py`: read-only optional dynamic memory bridge for projectmem-style systems.
-- `scripts/compact_memory.py`: read-only compaction strategy generator.
+- `assets/templates/`: AGENTS-first profile templates and optional legacy addons.
+- `scripts/init_docs.py`: initialize minimal, standard, or governed profile files.
+- `scripts/brief_memory.py`: read-only context brief and recommended read path.
+- `scripts/diagnose_memory.py`: read-only profile and context health diagnosis.
+- `scripts/status_sync_proposal.py`: read-only current-status sync proposal.
 - `scripts/migrate_agents.py`: read-only AGENTS.md migration planner.
-- `scripts/migrate_context.py`: read-only existing-context migration planner.
-- `references/maintenance-policy.md`: detailed maintenance and compaction policy.
+- `scripts/migrate_context.py`: read-only brownfield context classifier.
+- `scripts/compact_memory.py`: read-only compaction strategy generator.

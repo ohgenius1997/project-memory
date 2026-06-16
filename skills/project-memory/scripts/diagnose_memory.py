@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Read-only health diagnosis for project memory docs."""
+"""Read-only health diagnosis for AGENTS-first project memory routing."""
 
 from __future__ import annotations
 
@@ -13,32 +13,33 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 
 
-CORE_FILES = [
-    "AGENTS.md",
-    "PROJECT_STATUS.md",
-    "docs/CONTEXT.md",
-    "docs/PRINCIPLES.md",
-    "docs/PLAN.md",
-    "docs/VIBE_READINESS.md",
-    "docs/DECISIONS.md",
-    "docs/ENVIRONMENT.md",
-    "docs/REPOSITORY.md",
-    "docs/LOG.md",
-    "docs/COORDINATION.md",
-]
+PROFILE_FILES = {
+    "minimal": [
+        "AGENTS.md",
+    ],
+    "standard": [
+        "AGENTS.md",
+        "PROJECT_STATUS.md",
+        "docs/DECISIONS.md",
+    ],
+    "governed": [
+        "AGENTS.md",
+        "PROJECT_STATUS.md",
+        "docs/DECISIONS.md",
+        "docs/ENVIRONMENT.md",
+        "docs/COORDINATION.md",
+    ],
+}
+
+CORE_FILES = sorted({item for files in PROFILE_FILES.values() for item in files} | {"docs/LOG.md"})
 
 DEFAULT_BUDGETS = {
-    "AGENTS.md": 160,
-    "PROJECT_STATUS.md": 150,
-    "docs/CONTEXT.md": 220,
-    "docs/PRINCIPLES.md": 100,
-    "docs/PLAN.md": 200,
+    "AGENTS.md": 90,
+    "PROJECT_STATUS.md": 90,
     "docs/TRACKS.md": 260,
-    "docs/VIBE_READINESS.md": 260,
     "docs/DECISIONS.md": 350,
     "docs/ENVIRONMENT.md": 220,
-    "docs/REPOSITORY.md": 220,
-    "docs/LOG.md": 500,
+    "docs/LOG.md": 220,
     "docs/COORDINATION.md": 220,
 }
 
@@ -209,6 +210,31 @@ def status_field(status_text: str, name: str) -> str:
     return match.group(1).strip() if match else ""
 
 
+def detect_profile(target: Path) -> str:
+    agents = read(target / "AGENTS.md")
+    match = re.search(r"^-\s*Profile:\s*(minimal|standard|governed)\s*$", agents, re.MULTILINE)
+    if match:
+        return match.group(1)
+    if (target / "docs/ENVIRONMENT.md").exists() or (target / "docs/COORDINATION.md").exists():
+        return "governed"
+    if (target / "PROJECT_STATUS.md").exists() or (target / "docs/DECISIONS.md").exists():
+        return "standard"
+    return "minimal"
+
+
+def dynamic_memory_mode(target: Path) -> str:
+    agents = read(target / "AGENTS.md")
+    match = re.search(r"^-\s*Dynamic memory:\s*(agentmemory|none)\s*$", agents, re.MULTILINE)
+    if match:
+        return match.group(1)
+    lowered = agents.lower()
+    if "agentmemory" in lowered:
+        return "agentmemory"
+    if "dynamic memory: none" in lowered:
+        return "none"
+    return "unknown"
+
+
 def is_placeholder(value: str) -> bool:
     normalized = value.strip().strip("`").lower()
     return normalized in {
@@ -283,8 +309,10 @@ def tracked_dependency_files(target: Path) -> list[str]:
 def diagnose(target: Path, *, context_gate: bool = False) -> list[Finding]:
     findings: list[Finding] = []
     over_budget = False
+    profile = detect_profile(target)
+    dynamic_memory = dynamic_memory_mode(target)
 
-    for relative in CORE_FILES:
+    for relative in PROFILE_FILES[profile]:
         path = target / relative
         if not path.exists():
             add(
@@ -292,8 +320,8 @@ def diagnose(target: Path, *, context_gate: bool = False) -> list[Finding]:
                 "error",
                 "missing-core-file",
                 relative,
-                "Core project memory file is missing.",
-                "Run init_docs.py or restore the file from templates.",
+                f"Required `{profile}` profile file is missing.",
+                f"Run init_docs.py --profile {profile} or restore the file from templates.",
             )
 
     legacy_docs = legacy_context_files(target)
@@ -320,7 +348,12 @@ def diagnose(target: Path, *, context_gate: bool = False) -> list[Finding]:
                 "Project memory file lacks a Memory Metadata section.",
                 "Add owner, read_when, update_when, max_lines, and stale_if metadata.",
             )
-        if "Maintenance Rules" not in text:
+        has_maintenance = "Maintenance Rules" in text or (
+            relative == "AGENTS.md"
+            and "Memory Ownership" in text
+            and "Checkpoint Rules" in text
+        )
+        if not has_maintenance:
             add(
                 findings,
                 "warning",
@@ -340,7 +373,7 @@ def diagnose(target: Path, *, context_gate: bool = False) -> list[Finding]:
                     "agents-migration-recommended",
                     relative,
                     f"{relative} has {line_count} lines; budget is {budget}.",
-                    "Recommend running migrate-agents to move detailed context into docs/. Do not ordinary-compact AGENTS.md blindly.",
+                    "Recommend trimming AGENTS.md into a short router or upgrading profile; do not turn it into a project memory warehouse.",
                 )
                 continue
             add(
@@ -352,37 +385,59 @@ def diagnose(target: Path, *, context_gate: bool = False) -> list[Finding]:
                 "Recommend running compact to generate a developer-confirmed compaction plan.",
             )
 
-    readiness = read(target / "docs/VIBE_READINESS.md")
-    if readiness:
-        readiness_checks = [
-            ("product-goal-missing", "User: TBD", "Fill the user in the one-sentence product goal."),
-            ("problem-missing", "Problem: TBD", "Fill the problem in the one-sentence product goal."),
-            ("success-standard-missing", "Success standard: TBD", "Fill the success standard before broad code generation."),
-            ("stack-missing", "Required versions: TBD", "Record required/tested/preferred/unknown runtime and dependency versions."),
-            ("conventions-missing", "Directory rules: TBD", "Record directory structure and coding conventions."),
-            ("core-contracts-missing", "Domain model: TBD", "Record core data structures, schemas, API contracts, or state model."),
-            ("red-lines-missing", "Performance: TBD", "Record development red lines for performance, errors, privacy, and compatibility."),
-            ("ai-boundaries-missing", "AI may directly edit: TBD", "Record AI permission boundaries before broad AI implementation."),
-        ]
-        for code, marker, recommendation in readiness_checks:
-            if marker in readiness:
-                add(
-                    findings,
-                    "warning",
-                    code,
-                    "docs/VIBE_READINESS.md",
-                    f"Vibe readiness still contains placeholder: {marker}",
-                    recommendation,
-                )
-        if "Status: draft" in readiness:
+    agents_text = read(target / "AGENTS.md")
+    lowered_agents = agents_text.lower()
+    if agents_text:
+        if "critical:" not in lowered_agents or "context routing" not in lowered_agents:
             add(
                 findings,
-                "info",
-                "readiness-draft",
-                "docs/VIBE_READINESS.md",
-                "Vibe readiness status is still draft.",
-                "Before large implementation, mark missing fields explicitly or update readiness status.",
+                "warning",
+                "agents-router-contract-missing",
+                "AGENTS.md",
+                "AGENTS.md does not clearly present the always-on router contract.",
+                "Keep a first-screen context acknowledgement and task-based routing section in AGENTS.md.",
             )
+        if dynamic_memory == "unknown":
+            add(
+                findings,
+                "warning",
+                "dynamic-memory-routing-missing",
+                "AGENTS.md",
+                "AGENTS.md does not declare whether agentmemory or no dynamic memory is used.",
+                "Record `Dynamic memory: agentmemory` or `Dynamic memory: none` and the ownership split.",
+            )
+        if dynamic_memory == "agentmemory" and "attempts" not in lowered_agents:
+            add(
+                findings,
+                "warning",
+                "agentmemory-ownership-incomplete",
+                "AGENTS.md",
+                "agentmemory is named but its ownership boundary is not explicit.",
+                "Document that agentmemory owns attempts, failures, debug traces, file-level gotchas, and session continuity.",
+            )
+        if re.search(r"^##\s+\d{4}-\d{2}-\d{2}", agents_text, re.MULTILINE):
+            add(
+                findings,
+                "warning",
+                "agents-contains-history",
+                "AGENTS.md",
+                "AGENTS.md appears to contain dated historical sections.",
+                "Move history to agentmemory or sparse fallback LOG; keep AGENTS.md as the always-on router.",
+            )
+
+    agents_line_count = len(agents_text.splitlines())
+    if profile == "minimal" and (
+        agents_line_count > DEFAULT_BUDGETS["AGENTS.md"]
+        or re.search(r"Current phase:|Next step:|Decision:", agents_text)
+    ):
+        add(
+            findings,
+            "action",
+            "profile-upgrade-recommended",
+            "AGENTS.md",
+            "Minimal profile appears to be carrying current status or durable decision content.",
+            "Recommend upgrading to standard after developer confirmation: add PROJECT_STATUS.md and docs/DECISIONS.md.",
+        )
 
     status_text = read(target / "PROJECT_STATUS.md")
     if re.search(r"^##\s+\d{4}-\d{2}-\d{2}", status_text, re.MULTILINE):
@@ -394,7 +449,7 @@ def diagnose(target: Path, *, context_gate: bool = False) -> list[Finding]:
             "PROJECT_STATUS.md appears to contain dated historical sections.",
             "Keep current state here and move historical detail to docs/LOG.md.",
         )
-    if context_gate:
+    if context_gate and (profile != "minimal" or status_text):
         for field in ["Current phase", "Latest conclusion", "Next step"]:
             value = status_field(status_text, field)
             if is_placeholder(value):
@@ -416,6 +471,15 @@ def diagnose(target: Path, *, context_gate: bool = False) -> list[Finding]:
             "docs/LOG.md",
             "LOG.md appears to contain a durable decision entry.",
             "Copy durable decisions and rationale into docs/DECISIONS.md.",
+        )
+    if log_text and dynamic_memory == "agentmemory" and len(log_text.splitlines()) > 80:
+        add(
+            findings,
+            "warning",
+            "log-overused-with-agentmemory",
+            "docs/LOG.md",
+            "LOG.md is sizable even though agentmemory is the declared dynamic memory tool.",
+            "Keep LOG as sparse fallback only; move ordinary process history to agentmemory.",
         )
 
     tracks_text = read(target / "docs/TRACKS.md")
@@ -465,7 +529,7 @@ def diagnose(target: Path, *, context_gate: bool = False) -> list[Finding]:
                     "Fill the next step before starting broad work on this track.",
                 )
 
-    for relative in ["docs/ENVIRONMENT.md", "docs/REPOSITORY.md", "docs/COORDINATION.md"]:
+    for relative in ["docs/ENVIRONMENT.md", "docs/COORDINATION.md"]:
         path = target / relative
         text = read(path)
         dates = review_dates(text)
@@ -510,18 +574,6 @@ def diagnose(target: Path, *, context_gate: bool = False) -> list[Finding]:
             "Review environment notes for: " + ", ".join(changed_setup_files[:6]),
         )
 
-    repo = read(target / "docs/REPOSITORY.md")
-    remotes = git_lines(target, ["remote", "-v"])
-    if remotes and "Remote URL: TBD" in repo:
-        add(
-            findings,
-            "warning",
-            "repository-remote-undocumented",
-            "docs/REPOSITORY.md",
-            "Git remotes exist but repository docs still list remote URL as TBD.",
-            "Document the canonical remote and GitHub workflow.",
-        )
-
     branch = "\n".join(git_lines(target, ["branch", "--show-current"]))
     if branch and "Current branch: TBD" in status_text:
         add(
@@ -545,60 +597,30 @@ def diagnose(target: Path, *, context_gate: bool = False) -> list[Finding]:
             "Activate coordination if branches represent parallel workstreams.",
         )
 
-    projectmem_exists = (target / ".projectmem").exists()
-    if projectmem_exists:
-        routing_text = "\n".join(
-            [
-                read(target / "AGENTS.md"),
-                read(target / "docs/PRINCIPLES.md"),
-                read(target / "docs/PLAN.md"),
-            ]
-        ).lower()
-        if "projectmem" not in routing_text and ".projectmem" not in routing_text:
-            add(
-                findings,
-                "warning",
-                "projectmem-routing-undocumented",
-                ".projectmem",
-                "Projectmem appears to be installed but project memory docs do not mention the ownership split.",
-                "Document that project-memory owns stable governance while projectmem owns dynamic events and precheck hints.",
-            )
-
-    if shutil.which("pjm") and not projectmem_exists:
+    if dynamic_memory == "agentmemory" and not shutil.which("agentmemory"):
         add(
             findings,
             "info",
-            "projectmem-cli-available",
-            "project-memory",
-            "`pjm` is available but this project does not contain `.projectmem/`.",
-            "Use projectmem only if the developer wants dynamic event memory and precheck support.",
+            "agentmemory-not-on-path",
+            "AGENTS.md",
+            "AGENTS.md recommends agentmemory but the `agentmemory` CLI is not on PATH.",
+            "Install/connect agentmemory separately, or set Dynamic memory to none and use sparse LOG fallback.",
         )
 
-    conductor_exists = (target / "conductor").exists()
-    if conductor_exists:
-        routing_text = "\n".join(
-            [
-                read(target / "AGENTS.md"),
-                read(target / "docs/PRINCIPLES.md"),
-                read(target / "docs/PLAN.md"),
-            ]
-        ).lower()
-        has_project_memory_docs = (target / "PROJECT_STATUS.md").exists() or (target / "docs").exists()
-        has_boundary = "conductor" in routing_text and (
-            "external static context" in routing_text
-            or "conflict signal" in routing_text
-            or "do not parse" in routing_text
-            or "source of truth" in routing_text
-            or "source-of-truth" in routing_text
-        )
-        if has_project_memory_docs and not has_boundary:
+    if profile == "standard":
+        upgrade_reasons: list[str] = []
+        if len(branches) > 1:
+            upgrade_reasons.append(f"{len(branches)} local branches")
+        if tracked_dependency_files(target) and not (target / "docs/ENVIRONMENT.md").exists():
+            upgrade_reasons.append("setup/dependency files exist")
+        if upgrade_reasons:
             add(
                 findings,
-                "warning",
-                "static-context-source-conflict",
-                "conductor",
-                "Both `conductor/` and project-memory docs exist without an explicit external-context boundary.",
-                "Document that `conductor/` is an external static context directory and project-memory does not parse, migrate, or synchronize it by default.",
+                "action",
+                "profile-upgrade-recommended",
+                "project-memory",
+                "Standard profile may need governed coordination/environment docs: " + ", ".join(upgrade_reasons),
+                "Recommend upgrading to governed after developer confirmation if these signals represent ongoing complexity.",
             )
 
     porcelain = git_lines(target, ["status", "--short"])

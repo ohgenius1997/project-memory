@@ -13,13 +13,8 @@ from pathlib import Path
 PROJECT_MEMORY_FILES = {
     "AGENTS.md",
     "PROJECT_STATUS.md",
-    "docs/CONTEXT.md",
-    "docs/PRINCIPLES.md",
-    "docs/PLAN.md",
-    "docs/VIBE_READINESS.md",
     "docs/DECISIONS.md",
     "docs/ENVIRONMENT.md",
-    "docs/REPOSITORY.md",
     "docs/LOG.md",
     "docs/COORDINATION.md",
     "docs/TRACKS.md",
@@ -36,24 +31,23 @@ ROOT_CANDIDATES = [
 FILENAME_HINTS = [
     (re.compile(r"agents?", re.I), ["AGENTS.md"], "agent operating rules"),
     (re.compile(r"handoff|coordination", re.I), ["PROJECT_STATUS.md", "docs/COORDINATION.md"], "handoff/current coordination"),
-    (re.compile(r"roadmap|plan|todo", re.I), ["docs/PLAN.md"], "roadmap or planned work"),
-    (re.compile(r"context|background|overview", re.I), ["docs/CONTEXT.md", "docs/DECISIONS.md"], "project context and rationale"),
+    (re.compile(r"roadmap|plan|todo", re.I), ["PROJECT_STATUS.md"], "roadmap or planned work"),
+    (re.compile(r"context|background|overview", re.I), ["AGENTS.md", "docs/DECISIONS.md"], "project context and rationale"),
     (re.compile(r"decision|adr|rationale", re.I), ["docs/DECISIONS.md"], "durable decisions"),
     (re.compile(r"setup|environment|device|xcode|build", re.I), ["docs/ENVIRONMENT.md"], "setup/build/device context"),
-    (re.compile(r"repository|github|git|release|ci", re.I), ["docs/REPOSITORY.md"], "repository workflow"),
-    (re.compile(r"validation|test|qa|checklist", re.I), ["docs/VIBE_READINESS.md", "docs/PLAN.md"], "validation and readiness"),
+    (re.compile(r"repository|github|git|release|ci", re.I), ["docs/COORDINATION.md", "docs/ENVIRONMENT.md"], "repository workflow"),
+    (re.compile(r"validation|test|qa|checklist", re.I), ["AGENTS.md", "PROJECT_STATUS.md"], "validation and readiness"),
     (re.compile(r"domain|algorithm|color|palette|mard|business|terminology", re.I), ["docs/DOMAIN.md", "docs/DECISIONS.md"], "domain or algorithm facts"),
     (re.compile(r"changelog|history|log", re.I), ["docs/LOG.md"], "chronological history"),
 ]
 
 CONTENT_HINTS = [
     ("PROJECT_STATUS.md", ["current state", "current baseline", "active branch", "next step", "blocker", "当前"]),
-    ("docs/CONTEXT.md", ["goal", "problem", "background", "overview", "product goal", "known facts", "目标", "背景"]),
-    ("docs/PLAN.md", ["roadmap", "milestone", "phase", "planned order", "next priority", "scope", "计划", "路线"]),
-    ("docs/VIBE_READINESS.md", ["red line", "validation", "acceptance", "performance target", "security", "privacy", "验收"]),
+    ("AGENTS.md", ["goal", "problem", "background", "overview", "product goal", "known facts", "red line", "validation", "security", "privacy", "目标", "背景"]),
+    ("PROJECT_STATUS.md", ["roadmap", "milestone", "phase", "planned order", "next priority", "scope", "current state", "next step", "计划", "路线"]),
     ("docs/DECISIONS.md", ["decision", "accepted", "rejected", "rationale", "alternative", "tradeoff", "决定", "拒绝"]),
     ("docs/ENVIRONMENT.md", ["setup", "xcode", "install", "device", "simulator", "dependency", "path", "环境"]),
-    ("docs/REPOSITORY.md", ["git", "github", "branch", "commit", "push", "release", "ci", "仓库", "分支"]),
+    ("docs/COORDINATION.md", ["git", "github", "branch", "commit", "push", "release", "ci", "handoff", "coordination", "仓库", "分支"]),
     ("docs/COORDINATION.md", ["handoff", "coordination", "specialist", "parallel", "owner", "交接", "并行"]),
     ("docs/LOG.md", ["updated", "last updated", "completed", "merged", "history", "progress", "记录"]),
     ("docs/DOMAIN.md", ["domain", "algorithm", "palette", "mard", "user workflow", "terminology", "业务", "算法"]),
@@ -194,8 +188,8 @@ def plan(target: Path, includes: list[str], max_excerpt: int) -> list[MigrationI
 def print_markdown(items: list[MigrationItem]) -> None:
     print("# Existing Context Migration Plan\n")
     print("- Mode: read-only strategy; no files were modified")
-    print("- Scope: generic brownfield context classification")
-    print("- Non-goal: no Conductor parsing, migration, synchronization, or compatibility")
+    print("- Scope: generic brownfield context classification into AGENTS-first profile files")
+    print("- Non-goal: no dynamic memory import, full history preservation, or third-party context compatibility")
     print("- Requirement: developer confirmation is required before applying migration\n")
 
     if not items:

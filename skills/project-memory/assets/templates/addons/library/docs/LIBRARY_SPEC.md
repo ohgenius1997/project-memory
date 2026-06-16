@@ -9,8 +9,8 @@
 
 ## Maintenance Rules
 - Use this file for durable library/package contracts.
-- Keep implementation roadmap in `PLAN.md`.
-- Keep release and repository rules in `REPOSITORY.md`.
+- Keep current implementation state in `PROJECT_STATUS.md`.
+- Keep stable release rules in `AGENTS.md`; use `COORDINATION.md` only for active handoff.
 
 ## Package Purpose
 - TBD

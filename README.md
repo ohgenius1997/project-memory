@@ -1,45 +1,56 @@
 # project-memory
 
-`project-memory` is a Codex skill for creating and maintaining lightweight, agent-facing project memory docs.
+`project-memory` is a Codex skill for creating a lightweight, AGENTS-first project context router for AI-assisted development.
 
-It helps long-running AI-assisted coding projects preserve the context that future sessions need: current status, durable decisions, operating rules, environment notes, repository rules, coordination state, Vibe Coding readiness, and safe maintenance workflows.
+It follows four constraints:
+
+- little always-on context
+- strong task-based routing
+- weak ceremony
+- dynamic/episodic memory outsourced to agentmemory
+
+It is not an MCP server, vector memory engine, automatic session recorder, or documentation management system.
 
 ## What It Provides
 
-- Project memory initialization from templates
-- Existing-project inspection and addon recommendations
-- Short current-state briefs for new sessions
-- Task-based read paths for future agent sessions
-- Vibe Coding readiness checks
-- Context Gate and context-budget diagnostics
-- Optional feature-track templates for larger work units
-- Read-only bridge for projectmem-style dynamic memory
-- Read-only compaction plans
-- Read-only `AGENTS.md` migration plans
-- Read-only existing-context migration plans for brownfield projects
-- Optional projectmem/conductor detection rules
-- Source-of-truth conventions for project docs
+- Minimal `AGENTS.md` router generation by default
+- Optional `standard` and `governed` profiles for projects that need stable state, decisions, environment, or coordination docs
+- Agent-facing context routing and source-of-truth ownership rules
+- agentmemory collaboration guidance without installing or wrapping agentmemory
+- Read-only profile/context diagnosis
+- Read-only status sync proposals for `PROJECT_STATUS.md`
+- Read-only migration and compaction planners
 
-## Repository Layout
+## Recommended Pairing
 
-```text
-skills/project-memory/
-  SKILL.md
-  agents/openai.yaml
-  assets/templates/
-  references/maintenance-policy.md
-  scripts/
-    init_docs.py
-    inspect_project.py
-    brief_memory.py
-    diagnose_memory.py
-    memory_bridge.py
-    compact_memory.py
-    migrate_agents.py
-    migrate_context.py
-```
+Use `project-memory` for stable project governance:
 
-The root `docs/` directory is this repository's own project memory, used to dogfood the skill.
+- `AGENTS.md`: always-on routing, stable rules, and AI boundaries
+- `PROJECT_STATUS.md`: current phase, latest conclusion, next step, blockers, risks
+- `docs/DECISIONS.md`: durable decisions and rationale
+- `docs/ENVIRONMENT.md`: stable setup/cross-device facts when needed
+- `docs/COORDINATION.md`: active multi-session or multi-branch coordination when needed
+
+Use [agentmemory](https://github.com/rohitg00/agentmemory) for dynamic memory:
+
+- attempts
+- failures
+- debugging traces
+- file-level gotchas
+- session continuity
+- episodic recall
+
+`project-memory` does not install agentmemory. It only writes the routing contract that tells future agents how the two layers should cooperate.
+
+## Profiles
+
+| Profile | Files | Use when |
+| --- | --- | --- |
+| `minimal` | `AGENTS.md` | Default. Small projects, exploration, or projects with agentmemory. |
+| `standard` | `AGENTS.md`, `PROJECT_STATUS.md`, `docs/DECISIONS.md` | Continuous development needs current state and durable decisions. |
+| `governed` | standard + `docs/ENVIRONMENT.md`, `docs/COORDINATION.md` | Cross-device setup, multiple branches, multiple sessions, or handoff. |
+
+Profiles never upgrade automatically. Diagnosis can recommend an upgrade, but file creation or migration should happen only after developer confirmation.
 
 ## Install
 
@@ -52,27 +63,47 @@ cp -R skills/project-memory ~/.codex/skills/project-memory
 
 Restart Codex after installation so the skill can be discovered.
 
-## Basic Usage
+## Usage
 
-Initialize project memory docs in another repository:
+Initialize the default minimal router:
 
 ```bash
 python3 skills/project-memory/scripts/init_docs.py \
   --target /path/to/project \
   --project-name "My Project" \
   --project-kind "Codex skill" \
-  --domain "agent-facing project memory"
+  --domain "agent-facing project context"
 ```
 
-If the target already contains `conductor/`, initialization stops by default to avoid duplicate static context systems. `project-memory` treats `conductor/` as an external context directory and does not parse, migrate, or synchronize it by default. Rerun with `--allow-conductor` only after explicitly choosing to proceed.
-
-Inspect an existing repository before initialization:
+Initialize a project that needs stable current state and decisions:
 
 ```bash
-python3 skills/project-memory/scripts/inspect_project.py --target /path/to/project
+python3 skills/project-memory/scripts/init_docs.py \
+  --target /path/to/project \
+  --profile standard \
+  --project-name "My Project"
 ```
 
-Diagnose project memory health:
+Initialize a governed project:
+
+```bash
+python3 skills/project-memory/scripts/init_docs.py \
+  --target /path/to/project \
+  --profile governed \
+  --project-name "My Project"
+```
+
+Use no dynamic memory and add a sparse checkpoint log fallback:
+
+```bash
+python3 skills/project-memory/scripts/init_docs.py \
+  --target /path/to/project \
+  --profile standard \
+  --dynamic-memory none \
+  --fallback-log
+```
+
+Diagnose context health:
 
 ```bash
 python3 skills/project-memory/scripts/brief_memory.py --target /path/to/project
@@ -80,66 +111,31 @@ python3 skills/project-memory/scripts/diagnose_memory.py --target /path/to/proje
 python3 skills/project-memory/scripts/diagnose_memory.py --target /path/to/project --context-gate
 ```
 
-Use optional feature tracks for multi-session or multi-day work:
+Generate a read-only status sync proposal:
 
 ```bash
-python3 skills/project-memory/scripts/init_docs.py \
+python3 skills/project-memory/scripts/status_sync_proposal.py --target /path/to/project
+python3 skills/project-memory/scripts/status_sync_proposal.py \
   --target /path/to/project \
-  --project-name "My Project" \
-  --project-kind "Codex skill" \
-  --domain "agent-facing project memory" \
-  --addons skill,docs,domain,tracks
+  --agentmemory-summary summary.md
 ```
 
-Consult optional dynamic memory without binding to projectmem internals:
-
-```bash
-python3 skills/project-memory/scripts/memory_bridge.py detect --target /path/to/project
-python3 skills/project-memory/scripts/memory_bridge.py summary --target /path/to/project
-python3 skills/project-memory/scripts/memory_bridge.py precheck path/to/file --target /path/to/project
-```
-
-Generate a read-only compaction plan:
-
-```bash
-python3 skills/project-memory/scripts/compact_memory.py --target /path/to/project
-```
-
-Generate a read-only `AGENTS.md` migration plan:
+Generate read-only migration or compaction plans:
 
 ```bash
 python3 skills/project-memory/scripts/migrate_agents.py --target /path/to/project
-```
-
-Generate a read-only existing-context migration plan for brownfield docs:
-
-```bash
 python3 skills/project-memory/scripts/migrate_context.py --target /path/to/project
+python3 skills/project-memory/scripts/compact_memory.py --target /path/to/project
 ```
 
 ## Safety Model
 
-The helper scripts are intentionally conservative:
-
 - `init_docs.py` does not overwrite existing files unless `--force` is used.
-- `inspect_project.py` is read-only.
-- `diagnose_memory.py` is read-only.
-- `memory_bridge.py` is read-only and treats external memory output as advisory.
-- `compact_memory.py` is read-only and only proposes a strategy.
-- `migrate_agents.py` is read-only and only proposes a migration plan.
-- `migrate_context.py` is read-only and only classifies legacy context sources.
-
-Risky changes such as compaction, archival, deletion, or `AGENTS.md` rewrites should be reviewed and confirmed by the developer before an agent applies patches.
-
-## Interop Guidance
-
-`project-memory` can coexist with other memory tools when ownership is explicit:
-
-- Use `project-memory` for stable project governance: current status, principles, plans, durable decisions, environment, repository, coordination, and AI permission boundaries.
-- Use projectmem, when installed, for dynamic events: issues, attempts, fixes, file-level gotchas, and precheck hints.
-- Treat `conductor/` from context-driven-development as an external static context directory and conflict signal. Do not parse, migrate, or synchronize Conductor-specific files by default.
-
-For most projects, commit generated project-memory docs to git so context travels across devices and sessions. Do not commit secrets, private customer details, or machine-specific credentials.
+- Diagnosis, migration, compaction, and status sync scripts are read-only.
+- Profile upgrades are recommendations, not automatic mutations.
+- `AGENTS.md` should stay short and should not become a project encyclopedia.
+- `docs/LOG.md` is only a sparse fallback when agentmemory is unavailable.
+- In `docs/COORDINATION.md`, agents may update only their own session state unless the developer asks otherwise.
 
 ## Validation
 
@@ -150,21 +146,28 @@ PYTHONPYCACHEPREFIX=/tmp/project-memory-pycache \
 python3 -m py_compile skills/project-memory/scripts/*.py
 ```
 
-Run the built-in smoke checks:
+Run smoke checks:
 
 ```bash
+rm -rf /tmp/project-memory-smoke
 python3 skills/project-memory/scripts/init_docs.py \
   --target /tmp/project-memory-smoke \
-  --project-name "Smoke" \
-  --project-kind "Codex skill" \
-  --domain "agent-facing project memory" \
-  --addons skill,docs,domain,tracks
+  --project-name "Smoke"
+
+python3 skills/project-memory/scripts/init_docs.py \
+  --target /tmp/project-memory-smoke-standard \
+  --project-name "Smoke Standard" \
+  --profile standard
+
+python3 skills/project-memory/scripts/init_docs.py \
+  --target /tmp/project-memory-smoke-governed \
+  --project-name "Smoke Governed" \
+  --profile governed
 
 python3 skills/project-memory/scripts/brief_memory.py --target /tmp/project-memory-smoke
 python3 skills/project-memory/scripts/diagnose_memory.py --target /tmp/project-memory-smoke
-python3 skills/project-memory/scripts/diagnose_memory.py --target /tmp/project-memory-smoke --context-gate
-python3 skills/project-memory/scripts/inspect_project.py --target /tmp/project-memory-smoke
-python3 skills/project-memory/scripts/memory_bridge.py detect --target /tmp/project-memory-smoke
+python3 skills/project-memory/scripts/status_sync_proposal.py --target /tmp/project-memory-smoke-standard
+python3 skills/project-memory/scripts/migrate_agents.py --target /tmp/project-memory-smoke
 python3 skills/project-memory/scripts/migrate_context.py --target /tmp/project-memory-smoke
 ```
 
