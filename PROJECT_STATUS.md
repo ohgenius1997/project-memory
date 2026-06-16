@@ -190,6 +190,19 @@ Rationale:
 Current path:
 - `skills/project-memory`
 
+## 2026-06-16 Local skill installation
+
+Installed the current `project-memory` skill into the local Codex skills directory:
+- Source: `skills/project-memory`
+- Destination: `/Users/bytedance/.codex/skills/project-memory`
+
+Validation:
+- Installed `SKILL.md` has `name: project-memory`.
+- Official `quick_validate.py` passed for `/Users/bytedance/.codex/skills/project-memory`.
+
+Usage note:
+- Restart Codex to pick up the newly installed skill.
+
 ## 2026-06-16 Vibe readiness and AGENTS migration implementation
 
 Implemented refinements:
