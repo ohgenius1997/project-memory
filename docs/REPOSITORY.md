@@ -24,13 +24,13 @@
 
 ## GitHub
 - Intended repository name: `project-memory`
-- Remote URL: not configured yet
+- Remote URL: `https://github.com/ohgenius1997/project-memory.git`
 - Visibility: public
 - PR policy: direct push to `main` is acceptable until collaborators or CI are added.
 - Issue/project usage: optional after public release.
 
 ## Branch State
-- Current active branch: `main`
+- Current active branch: `main` tracking `origin/main`
 - Active work branches: none
 
 ## Generated Files

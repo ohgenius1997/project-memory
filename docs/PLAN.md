@@ -15,7 +15,7 @@
 
 ## Known Facts
 - The skill source lives under `skills/project-memory`.
-- The repository is ready for public GitHub setup after docs cleanup and validation.
+- The repository has been pushed to public GitHub after docs cleanup and validation.
 - The skill has already been installed locally once for dogfooding.
 
 ## Decisions
@@ -25,7 +25,7 @@
 
 ## Assumptions
 - Initial public users will copy or install the skill manually rather than via a package manager.
-- The GitHub repository will be created empty, then local history will be pushed.
+- Public users will initially install by copying the skill source.
 
 ## Open Questions
 - Whether to add CI for `py_compile` and skill validation.
@@ -45,7 +45,7 @@
 - [x] Install locally for dogfooding.
 - [x] Archive obsolete origin context.
 - [x] Add public repository metadata files.
-- [ ] Push to GitHub.
+- [x] Push to GitHub.
 - [ ] Verify GitHub rendering and repository metadata.
 
 ## In Scope
@@ -60,7 +60,5 @@
 - Automatic background document maintenance.
 
 ## Next Actions
-- Create empty GitHub repository if not already created.
-- Add remote.
-- Push `main`.
 - Review public README and topics.
+- Decide whether to add CI for script syntax and skill validation.

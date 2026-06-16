@@ -23,3 +23,4 @@
 - Added open-source repository metadata files.
 - Removed active-project references to the obsolete origin context and kept the details in `docs/archive/origin-scope-pivot.md`.
 - Validated Python script syntax, official skill metadata, initialization dry-run, and project memory diagnosis before the first public push.
+- Added GitHub remote `https://github.com/ohgenius1997/project-memory.git` and pushed `main`.
