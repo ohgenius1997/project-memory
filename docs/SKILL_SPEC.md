@@ -28,6 +28,8 @@
 - Use read-only planning for diagnosis, compaction, and AGENTS migration.
 - Keep projectmem integration optional and advisory.
 - Detect Conductor/context-driven-development as an alternate static context system; prefer migration or explicit source-of-truth ownership over default coexistence.
+- Keep projectmem bridge commands read-only and best-effort so the skill does not hard-depend on a specific projectmem CLI version.
+- Keep tracks optional for larger work units only; avoid creating a parallel project plan for small tasks.
 
 ## Assumptions
 - Future users will restart Codex after installation.
@@ -38,8 +40,12 @@
 
 ## Trigger Scenarios
 - Initialize project memory docs.
+- Inspect an existing project before initialization and recommend addons.
 - Generate a short current-state brief for a new session or handoff.
 - Diagnose stale or missing project memory.
+- Run a stricter Context Gate before broad implementation or active track work.
+- Create optional track templates for feature/milestone state.
+- Consult projectmem-style dynamic memory through a read-only bridge.
 - Generate a context-budget compaction plan.
 - Plan an AGENTS.md migration.
 - Check Vibe Coding readiness.
@@ -49,8 +55,11 @@
 
 ## Core Workflows
 - Initialize: `scripts/init_docs.py`
+- Inspect: `scripts/inspect_project.py`
 - Brief: `scripts/brief_memory.py`
 - Diagnose: `scripts/diagnose_memory.py`
+- Context Gate: `scripts/diagnose_memory.py --context-gate`
+- Dynamic memory bridge: `scripts/memory_bridge.py`
 - Compact plan: `scripts/compact_memory.py`
 - AGENTS migration plan: `scripts/migrate_agents.py`
 
@@ -63,3 +72,4 @@
 - Python syntax check for scripts.
 - Official skill validator when `PyYAML` is available.
 - Temporary project generation tests for key addon combinations.
+- Smoke tests for brief, diagnosis, context gate, project inspection, and memory bridge detection.

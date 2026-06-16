@@ -17,7 +17,7 @@ ADDONS_ROOT = TEMPLATE_ROOT / "addons"
 ADDON_GROUPS = {
     "project shape": ["skill", "app", "system", "library", "docs", "data-ai"],
     "platform/runtime": ["web", "ios", "cli", "cloud"],
-    "context": ["domain"],
+    "context": ["domain", "tracks"],
 }
 KNOWN_ADDONS = {addon for addons in ADDON_GROUPS.values() for addon in addons}
 
@@ -33,6 +33,10 @@ ADDON_ALIASES = {
     "business": "domain",
     "subject": "domain",
     "professional": "domain",
+    "track": "tracks",
+    "tracks": "tracks",
+    "workstream": "tracks",
+    "workstreams": "tracks",
 }
 
 ADDON_KEYWORDS = {
@@ -113,6 +117,14 @@ ADDON_KEYWORDS = {
         "deployment",
         "kubernetes",
         "serverless",
+    ],
+    "tracks": [
+        "track",
+        "tracks",
+        "workstream",
+        "workstreams",
+        "milestone",
+        "feature lifecycle",
     ],
 }
 
@@ -233,7 +245,7 @@ def parse_args() -> argparse.Namespace:
         nargs="*",
         help=(
             "Optional addons. Known: skill,app,system,library,docs,data-ai,"
-            "web,ios,cli,cloud,domain. Commas are accepted."
+            "web,ios,cli,cloud,domain,tracks. Commas are accepted."
         ),
     )
     parser.add_argument(
@@ -346,6 +358,8 @@ def main() -> int:
     print("- Keep `docs/COORDINATION.md` inactive until work splits.")
     if "domain" in addons:
         print("- Fill `docs/DOMAIN.md` with domain terms, rules, and risks.")
+    if "tracks" in addons:
+        print("- Fill `docs/TRACKS.md` when work splits into feature tracks or larger work units.")
     return 0
 
 

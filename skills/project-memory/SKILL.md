@@ -23,7 +23,8 @@ When resuming a project with this documentation system, read:
 6. `docs/ENVIRONMENT.md` when setup, build, runtime, or cross-device work is involved
 7. `docs/REPOSITORY.md` when git, GitHub, branches, releases, or remotes are involved
 8. `docs/COORDINATION.md` when parallel sessions, branches, agents, devices, or handoffs are involved
-9. `docs/LOG.md` only when historical detail is needed
+9. `docs/TRACKS.md` when feature tracks or larger work units are active
+10. `docs/LOG.md` only when historical detail is needed
 
 When available, run `scripts/brief_memory.py --target /path/to/project` first to get a short current-state brief and task-based read recommendations.
 
@@ -37,6 +38,7 @@ Use the smallest read set that can safely answer the task:
 - Work on setup, build, dependencies, or devices: add `docs/ENVIRONMENT.md`
 - Work on git, GitHub, release, or branches: add `docs/REPOSITORY.md`
 - Handle parallel work, handoff, or long-running tasks: add `docs/COORDINATION.md`
+- Work on an active feature track or multi-step milestone: add `docs/TRACKS.md` if present
 - Need business/domain terms or user mental model: add `docs/DOMAIN.md` if present
 - Need historical reasoning: read `docs/LOG.md` selectively
 - Project has `.projectmem/`: treat projectmem as dynamic event memory; use summaries/precheck results, not raw event logs
@@ -48,6 +50,12 @@ Use the smallest read set that can safely answer the task:
 ### Brief
 
 Use `scripts/brief_memory.py --target /path/to/project` at the start of a session or before a handoff. It is read-only and prints current phase, latest conclusion, next step, blockers, risks, recommended files to read, and detected external memory systems.
+
+### Inspect
+
+Use `scripts/inspect_project.py --target /path/to/project` before initializing memory for an existing codebase or when the user gives only a broad project description. It is read-only and reports detected languages, config files, candidate commands, existing memory systems, and recommended addons.
+
+Use inspection as input, not as truth. Confirm ambiguous ownership choices with the developer, especially when `conductor/`, existing docs, or long `AGENTS.md` files already exist.
 
 ### Initialize
 
@@ -63,7 +71,7 @@ If the user gives only natural language, infer addons conservatively from projec
 
 - Project shape addons: `skill`, `app`, `system`, `library`, `docs`, `data-ai`
 - Platform/runtime addons: `web`, `ios`, `cli`, `cloud`
-- Domain context addon: `domain`
+- Context addons: `domain`, `tracks`
 
 Do not create domain-specific addons such as `billing`, `medical`, or `inventory`. Business or technical domain knowledge belongs in `docs/DOMAIN.md`, `docs/CONTEXT.md`, `docs/PLAN.md`, or project-shape docs.
 
@@ -76,6 +84,14 @@ If a target already contains `conductor/`, `init_docs.py` stops by default. Ask 
 Read the default files in order. Summarize current phase, durable decisions, active constraints, next action, and any stale or missing context before doing project work.
 
 If `.projectmem/` exists, also consult projectmem summary/recent/precheck through its available CLI or MCP tools. Do not read raw event logs unless the developer explicitly asks for forensic detail.
+
+When available, prefer the read-only bridge:
+
+```bash
+python3 scripts/memory_bridge.py detect --target /path/to/project
+python3 scripts/memory_bridge.py summary --target /path/to/project
+python3 scripts/memory_bridge.py precheck path/to/file --target /path/to/project
+```
 
 If `conductor/` exists, read its index and relevant artifacts only after confirming whether Conductor or project-memory owns the static project context.
 
@@ -90,12 +106,15 @@ Update docs during normal work when the current state changes:
 - `docs/ENVIRONMENT.md`: dependency, setup, version, path, or cross-device changes
 - `docs/REPOSITORY.md`: branch, remote, GitHub, release, or generated-file rules
 - `docs/COORDINATION.md`: active workstreams, handoffs, collision zones
+- `docs/TRACKS.md`: active feature tracks, track status, last updated date, and next step
 
 Keep `PROJECT_STATUS.md` short. Move history into `docs/LOG.md`.
 
 ### Diagnose
 
 Use `scripts/diagnose_memory.py --target /path/to/project` for a read-only health check. Diagnose missing files, stale dates, missing maintenance rules, oversized status files, inactive coordination with multiple branches, and incomplete environment/repository notes.
+
+Use `scripts/diagnose_memory.py --target /path/to/project --context-gate` before broad implementation, large refactors, or active track work. Context Gate adds stricter checks for current status fields and active track next steps.
 
 Report findings first. Apply patches only when the fix is routine and clearly implied, or after developer confirmation when meaning is ambiguous.
 
@@ -132,6 +151,26 @@ Before broad implementation, large refactors, or work on a new feature track, ve
 - If `conductor/` exists, static-context source-of-truth ownership is explicit
 
 Context Gate produces warnings and update recommendations. It should not block the developer's request by itself.
+
+Prefer the scripted gate when available:
+
+```bash
+python3 scripts/diagnose_memory.py --target /path/to/project --context-gate
+```
+
+### Tracks
+
+Use `docs/TRACKS.md` only when work is too large for a single `PROJECT_STATUS.md` next step. Tracks are optional and should remain an index, not a second project plan.
+
+Recommended split:
+
+- `PROJECT_STATUS.md`: global current phase, latest conclusion, next step, blockers, active risks
+- `docs/PLAN.md`: accepted project-level approach and milestone order
+- `docs/TRACKS.md`: active/blocked/done feature tracks, owner/session, spec link, plan link, last updated, next step
+- `docs/tracks/<id>/SPEC.md`: local requirement, acceptance, dependencies, open questions
+- `docs/tracks/<id>/PLAN.md`: local execution plan and validation checklist
+
+Do not create tracks for every small task. Add tracks when multiple sessions, branches, feature areas, or multi-day work units need separate state.
 
 ### Projectmem Interop
 
@@ -213,8 +252,10 @@ After developer confirmation, the agent may apply patches according to the plan,
 
 - `assets/templates/`: core and addon documentation templates.
 - `scripts/init_docs.py`: initialize docs from templates.
+- `scripts/inspect_project.py`: read-only existing project shape inspection and addon recommendation.
 - `scripts/brief_memory.py`: read-only current-state brief and read-path recommendation.
 - `scripts/diagnose_memory.py`: read-only documentation health diagnosis.
+- `scripts/memory_bridge.py`: read-only optional dynamic memory bridge for projectmem-style systems.
 - `scripts/compact_memory.py`: read-only compaction strategy generator.
 - `scripts/migrate_agents.py`: read-only AGENTS.md migration planner.
 - `references/maintenance-policy.md`: detailed maintenance and compaction policy.

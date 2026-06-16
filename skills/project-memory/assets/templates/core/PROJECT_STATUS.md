@@ -36,6 +36,7 @@
 - Substantial code generation: `docs/VIBE_READINESS.md`
 - Git/GitHub work: `docs/REPOSITORY.md`
 - Domain context: `docs/DOMAIN.md` if present
+- Feature tracks: `docs/TRACKS.md` if present
 
 ## Handoff
 - Last completed: initialized project memory docs
@@ -50,4 +51,5 @@
 - Environment: `docs/ENVIRONMENT.md`
 - Repository: `docs/REPOSITORY.md`
 - Coordination: `docs/COORDINATION.md`
+- Tracks: `docs/TRACKS.md` if present
 - Log: `docs/LOG.md`

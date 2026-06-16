@@ -7,10 +7,13 @@ It helps long-running AI-assisted coding projects preserve the context that futu
 ## What It Provides
 
 - Project memory initialization from templates
+- Existing-project inspection and addon recommendations
 - Short current-state briefs for new sessions
 - Task-based read paths for future agent sessions
 - Vibe Coding readiness checks
-- Context-budget diagnostics
+- Context Gate and context-budget diagnostics
+- Optional feature-track templates for larger work units
+- Read-only bridge for projectmem-style dynamic memory
 - Read-only compaction plans
 - Read-only `AGENTS.md` migration plans
 - Optional projectmem/conductor detection rules
@@ -26,8 +29,10 @@ skills/project-memory/
   references/maintenance-policy.md
   scripts/
     init_docs.py
+    inspect_project.py
     brief_memory.py
     diagnose_memory.py
+    memory_bridge.py
     compact_memory.py
     migrate_agents.py
 ```
@@ -59,11 +64,37 @@ python3 skills/project-memory/scripts/init_docs.py \
 
 If the target already contains `conductor/`, initialization stops by default to avoid duplicate static context systems. Rerun with `--allow-conductor` only after choosing the source-of-truth split.
 
+Inspect an existing repository before initialization:
+
+```bash
+python3 skills/project-memory/scripts/inspect_project.py --target /path/to/project
+```
+
 Diagnose project memory health:
 
 ```bash
 python3 skills/project-memory/scripts/brief_memory.py --target /path/to/project
 python3 skills/project-memory/scripts/diagnose_memory.py --target /path/to/project
+python3 skills/project-memory/scripts/diagnose_memory.py --target /path/to/project --context-gate
+```
+
+Use optional feature tracks for multi-session or multi-day work:
+
+```bash
+python3 skills/project-memory/scripts/init_docs.py \
+  --target /path/to/project \
+  --project-name "My Project" \
+  --project-kind "Codex skill" \
+  --domain "agent-facing project memory" \
+  --addons skill,docs,domain,tracks
+```
+
+Consult optional dynamic memory without binding to projectmem internals:
+
+```bash
+python3 skills/project-memory/scripts/memory_bridge.py detect --target /path/to/project
+python3 skills/project-memory/scripts/memory_bridge.py summary --target /path/to/project
+python3 skills/project-memory/scripts/memory_bridge.py precheck path/to/file --target /path/to/project
 ```
 
 Generate a read-only compaction plan:
@@ -83,7 +114,9 @@ python3 skills/project-memory/scripts/migrate_agents.py --target /path/to/projec
 The helper scripts are intentionally conservative:
 
 - `init_docs.py` does not overwrite existing files unless `--force` is used.
+- `inspect_project.py` is read-only.
 - `diagnose_memory.py` is read-only.
+- `memory_bridge.py` is read-only and treats external memory output as advisory.
 - `compact_memory.py` is read-only and only proposes a strategy.
 - `migrate_agents.py` is read-only and only proposes a migration plan.
 
@@ -116,10 +149,13 @@ python3 skills/project-memory/scripts/init_docs.py \
   --project-name "Smoke" \
   --project-kind "Codex skill" \
   --domain "agent-facing project memory" \
-  --addons skill,docs,domain
+  --addons skill,docs,domain,tracks
 
 python3 skills/project-memory/scripts/brief_memory.py --target /tmp/project-memory-smoke
 python3 skills/project-memory/scripts/diagnose_memory.py --target /tmp/project-memory-smoke
+python3 skills/project-memory/scripts/diagnose_memory.py --target /tmp/project-memory-smoke --context-gate
+python3 skills/project-memory/scripts/inspect_project.py --target /tmp/project-memory-smoke
+python3 skills/project-memory/scripts/memory_bridge.py detect --target /tmp/project-memory-smoke
 ```
 
 If the Codex skill validator and `PyYAML` are available:

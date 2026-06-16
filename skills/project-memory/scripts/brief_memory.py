@@ -58,6 +58,10 @@ def recommended_reads(target: Path, fields: dict[str, str]) -> list[str]:
         coordination = read(target / "docs/COORDINATION.md")
         if "Status: active" in coordination:
             reads.append("docs/COORDINATION.md")
+    if file_exists(target, "docs/TRACKS.md") and any(
+        word in text for word in ["track", "feature", "milestone", "workstream"]
+    ):
+        reads.append("docs/TRACKS.md")
     if file_exists(target, "docs/DOMAIN.md"):
         reads.append("docs/DOMAIN.md")
 

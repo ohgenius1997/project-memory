@@ -13,6 +13,7 @@ Use this reference when diagnosing, compacting, or repairing generated project m
 - Setup and cross-device configuration: `docs/ENVIRONMENT.md`
 - Git/GitHub/release rules: `docs/REPOSITORY.md`
 - Parallel work and handoff state: `docs/COORDINATION.md`
+- Feature tracks and larger work-unit state: `docs/TRACKS.md`
 - Chronological narrative: `docs/LOG.md`
 
 ## Selective Loading
@@ -26,13 +27,17 @@ Use `scripts/brief_memory.py` at session start when present. It provides a short
 Addons describe project shape and platform/runtime, not business domains:
 - Project shape: `skill`, `app`, `system`, `library`, `docs`, `data-ai`
 - Platform/runtime: `web`, `ios`, `cli`, `cloud`
-- Domain knowledge: `domain`
+- Context: `domain`, `tracks`
 
 Do not create one-off business-domain addons such as billing, medical, or inventory. Put those facts in `docs/DOMAIN.md` and project-specific specs.
+
+Use `tracks` only when the project has multi-session, multi-branch, or multi-day work units. Do not create tracks for every small task.
 
 ## External Memory Interop
 
 Projectmem is a dynamic event memory layer. Use it for issues, attempts, fixes, file-level gotchas, and precheck hints. Do not hand-edit raw projectmem event logs. At session end, use recent projectmem events to check whether `PROJECT_STATUS.md` is stale, but do not mechanically copy every event into project-memory docs.
+
+When available, prefer `scripts/memory_bridge.py detect|summary|precheck` for projectmem-style memory. The bridge is read-only and best-effort; if it cannot read a summary or precheck result, continue with project-memory docs and local code inspection.
 
 Precheck output is risk evidence. It can require mitigation, extra testing, or plan changes, but it must not be the only reason to refuse a user request.
 
@@ -54,6 +59,7 @@ Before broad AI implementation, check `docs/VIBE_READINESS.md`. If product goal,
 
 Before broad implementation or large refactors, also run a context gate:
 - `PROJECT_STATUS.md` next step should match the intended task.
+- Active `docs/TRACKS.md` entries should have concrete next steps and recent `Last Updated` dates.
 - Relevant durable decisions should be reviewed.
 - Environment and repository docs should be current when tooling, dependency, CI, release, branch, or cross-device work is involved.
 - If projectmem exists, recent failures and precheck hints should be considered.

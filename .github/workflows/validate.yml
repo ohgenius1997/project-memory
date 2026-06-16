@@ -52,7 +52,10 @@ jobs:
             --project-name "Smoke" \
             --project-kind "Codex skill" \
             --domain "agent-facing project memory" \
-            --addons skill,docs,domain
+            --addons skill,docs,domain,tracks
 
           python skills/project-memory/scripts/brief_memory.py --target /tmp/project-memory-smoke
           python skills/project-memory/scripts/diagnose_memory.py --target /tmp/project-memory-smoke
+          python skills/project-memory/scripts/diagnose_memory.py --target /tmp/project-memory-smoke --context-gate
+          python skills/project-memory/scripts/inspect_project.py --target /tmp/project-memory-smoke
+          python skills/project-memory/scripts/memory_bridge.py detect --target /tmp/project-memory-smoke

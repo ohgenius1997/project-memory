@@ -27,3 +27,6 @@
 - Began Phase 0-3 optimization: added projectmem interop rules, Conductor detection rules, Context Gate guidance, `brief_memory.py`, expanded diagnosis checks, README updates, and GitHub Actions validation.
 - Synced the updated `project-memory` skill into the local Codex skills directory and validated the installed copy.
 - Added `init_docs.py --allow-conductor` as an explicit confirmation gate for projects that already use `conductor/`.
+- Continued the next iteration: added optional `tracks` addon templates, `diagnose_memory.py --context-gate`, read-only `memory_bridge.py`, and read-only `inspect_project.py`.
+- Updated skill instructions, generated AGENTS template, README, CI smoke checks, and dogfood docs for the new workflows.
+- Synced the updated skill into the local Codex skills directory and validated the installed copy.

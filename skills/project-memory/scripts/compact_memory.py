@@ -16,6 +16,7 @@ DEFAULT_BUDGETS = {
     "docs/CONTEXT.md": 220,
     "docs/PRINCIPLES.md": 100,
     "docs/PLAN.md": 200,
+    "docs/TRACKS.md": 260,
     "docs/VIBE_READINESS.md": 260,
     "docs/DECISIONS.md": 350,
     "docs/DOMAIN.md": 240,

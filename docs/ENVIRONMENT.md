@@ -31,6 +31,9 @@
 ## Setup Commands
 - Validate scripts: `PYTHONPYCACHEPREFIX=/tmp/project-memory-pycache python3 -m py_compile skills/project-memory/scripts/*.py`
 - Generate brief: `python3 skills/project-memory/scripts/brief_memory.py --target .`
+- Run context gate: `python3 skills/project-memory/scripts/diagnose_memory.py --target . --context-gate`
+- Inspect project shape: `python3 skills/project-memory/scripts/inspect_project.py --target .`
+- Detect dynamic memory bridge state: `python3 skills/project-memory/scripts/memory_bridge.py detect --target .`
 - Validate skill when PyYAML is available: `python3 /path/to/quick_validate.py skills/project-memory`
 
 ## Machine-Specific Notes

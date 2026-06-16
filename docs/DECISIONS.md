@@ -21,6 +21,7 @@
 - 2026-06-16 - Use MIT license for open source release
 - 2026-06-16 - Keep projectmem optional and advisory
 - 2026-06-16 - Treat Conductor as alternate static context
+- 2026-06-16 - Add optional tracks and read-only helper adapters
 
 ## Decision Log
 
@@ -59,3 +60,9 @@
 - Decision: `conductor/` from context-driven-development is an alternate static context system, not a default companion layer.
 - Rationale: Conductor and project-memory both own static project context, so default coexistence risks duplicate facts.
 - Consequences: detection should prompt migration, read-only compatibility, or explicit source-of-truth ownership.
+
+### 2026-06-16 - Add optional tracks and read-only helper adapters
+- Decision: Add optional `tracks` templates, Context Gate diagnostics, `inspect_project.py`, and read-only `memory_bridge.py`.
+- Rationale: These features borrow the useful parts of richer context systems without making project-memory a daemon, MCP server, or runtime dependency.
+- Consequences: The skill can guide larger and existing projects better while preserving the core safety model: diagnose and suggest first, patch only after clear intent or confirmation.
+- Alternatives considered: make projectmem/Conductor hard dependencies; rejected because that would narrow usage and increase maintenance risk.

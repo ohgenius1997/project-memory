@@ -28,7 +28,7 @@
 - Visibility: public
 - PR policy: direct push to `main` is acceptable until collaborators or CI are added.
 - Issue/project usage: optional after public release.
-- CI: GitHub Actions validates script syntax, skill metadata, initialization smoke test, brief, and diagnosis.
+- CI: GitHub Actions validates script syntax, skill metadata, initialization smoke test, brief, diagnosis, context gate, project inspection, and memory bridge detection.
 
 ## Branch State
 - Current active branch: `main` tracking `origin/main`

@@ -33,6 +33,7 @@ DEFAULT_BUDGETS = {
     "docs/CONTEXT.md": 220,
     "docs/PRINCIPLES.md": 100,
     "docs/PLAN.md": 200,
+    "docs/TRACKS.md": 260,
     "docs/VIBE_READINESS.md": 260,
     "docs/DECISIONS.md": 350,
     "docs/ENVIRONMENT.md": 220,
@@ -159,6 +160,69 @@ def review_dates(text: str) -> list[dt.date]:
     return dates
 
 
+def status_field(status_text: str, name: str) -> str:
+    match = re.search(rf"^-\s*{re.escape(name)}:\s*(.+)$", status_text, re.MULTILINE)
+    return match.group(1).strip() if match else ""
+
+
+def is_placeholder(value: str) -> bool:
+    normalized = value.strip().strip("`").lower()
+    return normalized in {
+        "",
+        "tbd",
+        "todo",
+        "unknown",
+        "none",
+        "none recorded",
+        "not recorded",
+        "n/a",
+        "-",
+    }
+
+
+def parse_date(value: str) -> dt.date | None:
+    try:
+        return dt.date.fromisoformat(value.strip())
+    except ValueError:
+        return None
+
+
+def markdown_table_rows(text: str, headers: list[str]) -> list[dict[str, str]]:
+    rows: list[dict[str, str]] = []
+    expected = [header.lower() for header in headers]
+    lines = text.splitlines()
+    for index, line in enumerate(lines):
+        cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
+        if [cell.lower() for cell in cells] != expected:
+            continue
+        for row_line in lines[index + 2 :]:
+            if not row_line.strip().startswith("|"):
+                break
+            row_cells = [cell.strip() for cell in row_line.strip().strip("|").split("|")]
+            if len(row_cells) != len(headers):
+                continue
+            rows.append(dict(zip(expected, row_cells)))
+        break
+    return rows
+
+
+def track_rows(tracks_text: str) -> list[dict[str, str]]:
+    return markdown_table_rows(
+        tracks_text,
+        [
+            "ID",
+            "Status",
+            "Priority",
+            "Owner",
+            "Scope",
+            "Spec",
+            "Plan",
+            "Last Updated",
+            "Next Step",
+        ],
+    )
+
+
 def tracked_dependency_files(target: Path) -> list[str]:
     files: set[str] = set()
     for relative in DEPENDENCY_AND_SETUP_FILES:
@@ -172,7 +236,7 @@ def tracked_dependency_files(target: Path) -> list[str]:
     return sorted(files)
 
 
-def diagnose(target: Path) -> list[Finding]:
+def diagnose(target: Path, *, context_gate: bool = False) -> list[Finding]:
     findings: list[Finding] = []
     over_budget = False
 
@@ -274,6 +338,18 @@ def diagnose(target: Path) -> list[Finding]:
             "PROJECT_STATUS.md appears to contain dated historical sections.",
             "Keep current state here and move historical detail to docs/LOG.md.",
         )
+    if context_gate:
+        for field in ["Current phase", "Latest conclusion", "Next step"]:
+            value = status_field(status_text, field)
+            if is_placeholder(value):
+                add(
+                    findings,
+                    "warning",
+                    "gate-status-field-missing",
+                    "PROJECT_STATUS.md",
+                    f"Context Gate requires a current `{field}` value.",
+                    "Update PROJECT_STATUS.md before broad implementation so future sessions have a clear starting point.",
+                )
 
     log_text = read(target / "docs/LOG.md")
     if re.search(r"^\s*-\s*Decision:", log_text, re.MULTILINE | re.IGNORECASE):
@@ -285,6 +361,53 @@ def diagnose(target: Path) -> list[Finding]:
             "LOG.md appears to contain a durable decision entry.",
             "Copy durable decisions and rationale into docs/DECISIONS.md.",
         )
+
+    tracks_text = read(target / "docs/TRACKS.md")
+    if tracks_text:
+        today = dt.date.today()
+        for row in track_rows(tracks_text):
+            track_id = row.get("id", "")
+            status = row.get("status", "").strip().lower()
+            if track_id.strip().lower() == "tbd":
+                add(
+                    findings,
+                    "info",
+                    "tracks-placeholder",
+                    "docs/TRACKS.md",
+                    "TRACKS.md still contains the template placeholder row.",
+                    "Replace the placeholder with real feature tracks or remove the row until tracks are needed.",
+                )
+                continue
+            if status not in {"active", "blocked"}:
+                continue
+            updated = parse_date(row.get("last updated", ""))
+            if not updated:
+                add(
+                    findings,
+                    "warning",
+                    "track-date-invalid",
+                    "docs/TRACKS.md",
+                    f"Active track `{track_id}` lacks a valid ISO Last Updated date.",
+                    "Use YYYY-MM-DD so stale track detection remains reliable.",
+                )
+            elif (today - updated).days > 30:
+                add(
+                    findings,
+                    "warning",
+                    "track-stale",
+                    "docs/TRACKS.md",
+                    f"Active track `{track_id}` was last updated {(today - updated).days} days ago.",
+                    "Review the track plan or mark it paused/done if it is no longer active.",
+                )
+            if context_gate and is_placeholder(row.get("next step", "")):
+                add(
+                    findings,
+                    "warning",
+                    "gate-track-next-step-missing",
+                    "docs/TRACKS.md",
+                    f"Active track `{track_id}` has no concrete next step.",
+                    "Fill the next step before starting broad work on this track.",
+                )
 
     for relative in ["docs/ENVIRONMENT.md", "docs/REPOSITORY.md", "docs/COORDINATION.md"]:
         path = target / relative
@@ -457,11 +580,16 @@ def print_markdown(findings: list[Finding]) -> None:
 def main() -> int:
     parser = argparse.ArgumentParser(description="Diagnose project memory docs.")
     parser.add_argument("--target", default=".", help="Project directory to diagnose.")
+    parser.add_argument(
+        "--context-gate",
+        action="store_true",
+        help="Add stricter readiness checks for broad implementation or feature-track work.",
+    )
     parser.add_argument("--json", action="store_true", help="Emit JSON.")
     args = parser.parse_args()
 
     target = Path(args.target).expanduser().resolve()
-    findings = diagnose(target)
+    findings = diagnose(target, context_gate=args.context_gate)
 
     if args.json:
         print(json.dumps([asdict(item) for item in findings], indent=2))

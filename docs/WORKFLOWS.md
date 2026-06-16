@@ -14,12 +14,21 @@
 - Do not duplicate current roadmap details from `PLAN.md`.
 
 ## Workflow Index
+- Inspect existing project
 - Generate project memory brief
 - Initialize project memory
 - Diagnose project memory
+- Run Context Gate
+- Use dynamic memory bridge
 - Generate compaction plan
 - Plan AGENTS.md migration
 - Prepare public repository release
+
+## Inspect Existing Project
+1. Run `scripts/inspect_project.py --target <project>`.
+2. Use detected languages, config files, existing memory systems, and recommended addons as input.
+3. Confirm source-of-truth ownership before initializing if `conductor/`, existing docs, or long `AGENTS.md` already exist.
+4. Do not treat inspection output as a full architecture analysis.
 
 ## Generate Project Memory Brief
 1. Run `scripts/brief_memory.py --target <project>`.
@@ -39,6 +48,18 @@
 3. Check for context-budget issues, stale setup/repository notes, projectmem routing, and Conductor source-of-truth conflicts.
 4. Recommend compact or migrate-agents when budgets are exceeded.
 5. Patch only routine, clear updates unless the developer confirms larger changes.
+
+## Run Context Gate
+1. Run `scripts/diagnose_memory.py --target <project> --context-gate`.
+2. Check whether current status fields and active track next steps are concrete.
+3. Treat warnings as update recommendations, not automatic blockers.
+4. If warnings expose ambiguous product, stack, contract, or permission facts, ask the developer before broad implementation.
+
+## Use Dynamic Memory Bridge
+1. Run `scripts/memory_bridge.py detect --target <project>`.
+2. If projectmem-style memory exists, run `summary` or `precheck <file>` as needed.
+3. Treat returned output as advisory risk input.
+4. Do not read or edit raw event logs unless the developer explicitly asks for forensic detail.
 
 ## Generate Compaction Plan
 1. Run `scripts/compact_memory.py --target <project>`.

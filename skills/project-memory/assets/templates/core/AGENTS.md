@@ -23,7 +23,8 @@
 6. `docs/ENVIRONMENT.md` when setup/build/runtime/cross-device details matter
 7. `docs/REPOSITORY.md` when git/GitHub/branch/release details matter
 8. `docs/COORDINATION.md` when parallel work or handoff exists
-9. `docs/LOG.md` only when historical detail is needed
+9. `docs/TRACKS.md` when feature tracks or larger work units are active
+10. `docs/LOG.md` only when historical detail is needed
 
 ## Task-Based Read Paths
 - Continue implementation: `PROJECT_STATUS.md`, `docs/PRINCIPLES.md`, `docs/PLAN.md`
@@ -32,6 +33,7 @@
 - Work on setup/build/runtime/devices: add `docs/ENVIRONMENT.md`
 - Work on git/GitHub/branches/releases: add `docs/REPOSITORY.md`
 - Handle handoff/parallel work/long tasks: add `docs/COORDINATION.md`
+- Work on active feature tracks or multi-step milestones: add `docs/TRACKS.md` if present
 - Need domain terminology or business rules: add `docs/DOMAIN.md` if present
 - Need historical reasoning: read `docs/LOG.md` selectively
 - Diagnose or compact project memory: read all project memory docs first
@@ -46,15 +48,18 @@
 - Setup and cross-device configuration: `docs/ENVIRONMENT.md`
 - Git/GitHub/release rules: `docs/REPOSITORY.md`
 - Parallel work and handoff state: `docs/COORDINATION.md`
+- Feature track status and local work-unit links: `docs/TRACKS.md`
 - Chronological history: `docs/LOG.md`
 
 ## External Memory Modes
 - If `.projectmem/` exists, treat projectmem as dynamic event memory for issues, attempts, fixes, file-level gotchas, and precheck hints. Do not read or edit raw event logs unless explicitly asked.
+- Prefer `memory_bridge.py detect|summary|precheck` when the project-memory skill scripts are available.
 - If `conductor/` exists, treat it as an alternate static context system. Do not duplicate product, technical, workflow, or work-unit facts across `conductor/` and `docs/` without an explicit source-of-truth decision.
 - Precheck warnings are risk inputs, not refusal criteria. Use them to adjust the plan and explain mitigation.
 
 ## Context Gate
 - Before broad implementation, large refactors, or new feature work, check `docs/VIBE_READINESS.md`, `PROJECT_STATUS.md`, and relevant decisions.
+- Prefer `diagnose_memory.py --context-gate` when the project-memory skill scripts are available.
 - If `.projectmem/` exists, use recent events or precheck output to verify the current plan is not repeating known failures.
 - If `conductor/` exists, confirm which static context system owns the facts needed for the task.
 
@@ -65,6 +70,7 @@
 - Update `docs/ENVIRONMENT.md` when setup, dependencies, versions, paths, or cross-device assumptions change.
 - Update `docs/REPOSITORY.md` when git/GitHub rules, remotes, branches, generated-file policy, or release process changes.
 - Activate or update `docs/COORDINATION.md` when work splits across sessions, branches, agents, devices, or long-running tasks.
+- Update `docs/TRACKS.md` when active feature track state, owner/session, last updated date, or next step changes.
 - Update `docs/VIBE_READINESS.md` when product goal, stack/runtime, conventions, core contracts, red lines, or AI permission boundaries change.
 
 ## Context Budget Warnings

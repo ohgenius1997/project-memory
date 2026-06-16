@@ -17,7 +17,7 @@
 - The skill source lives under `skills/project-memory`.
 - The repository has been pushed to public GitHub after docs cleanup and validation.
 - The skill has already been installed locally once for dogfooding.
-- Current optimization direction: add read-only brief, projectmem interop rules, conductor detection, and stronger diagnosis without turning the skill into a runtime framework.
+- Current optimization direction: add small, read-only workflow helpers without turning the skill into a runtime framework.
 
 ## Decisions
 - Publish this repository as the `project-memory` skill project.
@@ -25,14 +25,15 @@
 - Keep helper scripts dependency-light and runnable with Python standard library.
 - Treat projectmem as an optional dynamic event layer.
 - Treat context-driven-development/Conductor as an alternate static context system, not a default companion.
+- Keep feature tracks optional and lightweight; they are an index for larger work units, not a replacement for `PROJECT_STATUS.md` or `docs/PLAN.md`.
 
 ## Assumptions
 - Initial public users will copy or install the skill manually rather than via a package manager.
 - Public users will initially install by copying the skill source.
 
 ## Open Questions
-- Whether to add CI for `py_compile` and skill validation.
-- Whether to add examples or screenshots after the first public push.
+- Whether to add examples or screenshots after more dogfooding.
+- Whether projectmem CLI support needs a stable adapter after observing real-world usage.
 
 ## Risks
 - The public repository may imply stable API guarantees before the skill has real external usage.
@@ -41,7 +42,7 @@
 - Keep the repository small and focused.
 - Treat `README.md` as the public entrypoint.
 - Treat `PROJECT_STATUS.md` and `docs/` as agent-facing project memory.
-- Implement improvements in phases: rules first, diagnosis/brief next, optional tracks and bridges later.
+- Implement improvements in phases: rules first, diagnosis/brief next, optional tracks and read-only bridges now.
 
 ## Milestones
 - [x] Build `project-memory` skill.
@@ -51,16 +52,19 @@
 - [x] Add public repository metadata files.
 - [x] Push to GitHub.
 - [x] Add Phase 0/1/2/3 improvements: CI, interop rules, diagnosis checks, and brief script.
-- [ ] Sync local installed skill and push updated release.
-- [ ] Add optional tracks addon and context gate diagnostics.
-- [ ] Add read-only projectmem bridge.
-- [ ] Add brownfield inspect light mode.
+- [x] Sync local installed skill and push Phase 0/1/2/3 release.
+- [x] Add optional tracks addon and context gate diagnostics.
+- [x] Add read-only projectmem bridge.
+- [x] Add brownfield inspect light mode.
+- [ ] Validate, sync local installed skill, commit, and push current iteration.
 
 ## In Scope
 - Skill templates and scripts.
 - Project-memory documentation workflows.
 - Vibe readiness and AGENTS migration planning.
 - Read-only brief, diagnosis, interop routing, and source-of-truth checks.
+- Optional feature-track templates for larger work units.
+- Read-only dynamic-memory bridge and existing-project inspection.
 - Public README, license, and repository hygiene.
 
 ## Out Of Scope
@@ -70,6 +74,6 @@
 - MCP server, daemon, watcher, git hooks, or automatic projectmem writes.
 
 ## Next Actions
-- Validate current Phase 0-3 implementation.
+- Run full validation for the current iteration.
 - Sync local installed skill after validation.
 - Commit and push.
