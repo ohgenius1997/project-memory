@@ -44,6 +44,13 @@ CRITICAL: Before mutating repository files, read this `AGENTS.md`, choose the sm
 - Do not write ordinary attempts, transient failures, or debug traces into project-memory docs; use agentmemory.
 - If dynamic memory is unavailable, keep `docs/LOG.md` to sparse checkpoint summaries only.
 
+## Git Tracking Policy
+- Follow this repository's `.gitignore` and developer instructions for which memory files are committed.
+- Usually commit this `AGENTS.md` when repository rules should travel across branches, machines, or collaborators.
+- Commit `PROJECT_STATUS.md` and `docs/DECISIONS.md` only when current state and durable decisions should be reviewed, merged, and shared.
+- Treat `docs/COORDINATION.md`, sparse `docs/LOG.md`, and dynamic-memory exports as project-specific; do not assume they are public or private.
+- Never commit secrets, private tokens, credentials, large raw session transcripts, or raw dynamic-memory dumps.
+
 ## AI Boundaries
 - Do not store secrets, credentials, or private tokens in project-memory docs.
 - Do not overwrite existing context files without explicit developer confirmation.

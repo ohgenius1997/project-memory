@@ -27,6 +27,19 @@ Use the smallest profile that fits the project.
 
 Never auto-upgrade profiles. Diagnose complexity and recommend an upgrade with rationale, added files, and maintenance cost. Apply the upgrade only after developer confirmation.
 
+## Git Tracking Policy
+
+Do not decide globally that all memory files must be committed or ignored. Git tracking is a target-project policy.
+
+Default guidance:
+- `AGENTS.md` is usually committed when repository rules should travel across branches, devices, and contributors.
+- `PROJECT_STATUS.md` and `docs/DECISIONS.md` are usually committed when current state and durable decisions need branch/cross-device continuity.
+- `docs/ENVIRONMENT.md` is committed only for non-secret, stable setup facts.
+- `docs/COORDINATION.md`, sparse `docs/LOG.md`, and dynamic-memory exports are project-specific; follow the developer's policy and `.gitignore`.
+- Never commit secrets, private tokens, credentials, large raw session transcripts, or raw dynamic-memory dumps.
+
+When initializing or diagnosing, describe the tradeoff instead of forcing a repo-wide answer.
+
 ## Read Rules
 
 Start with `AGENTS.md`. It is the always-on router.
@@ -107,6 +120,8 @@ python3 scripts/status_sync_proposal.py --target /path/to/project --agentmemory-
 ```
 
 If agentmemory output is available, pass a summary file or `--agentmemory-summary -` via stdin. If not, the script falls back to git state and sparse `docs/LOG.md`. Apply the suggested status fields only after developer confirmation.
+
+Do not hard-code agentmemory CLI/API calls unless the developer confirms a stable local command. Prefer stdin or an explicitly supplied summary file for now.
 
 ## Migration
 

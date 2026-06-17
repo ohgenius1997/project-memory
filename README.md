@@ -42,6 +42,14 @@ Use [agentmemory](https://github.com/rohitg00/agentmemory) for dynamic memory:
 
 `project-memory` does not install agentmemory. It only writes the routing contract that tells future agents how the two layers should cooperate.
 
+## Repository Files vs Generated Files
+
+This repository uses `AGENTS.md` for its own contributor/agent instructions.
+
+The template used for target projects lives at `skills/project-memory/assets/templates/core/AGENTS.md`. When `init_docs.py` initializes another project, it writes that template into the target project's `AGENTS.md`.
+
+Root-level local project-memory files such as `PROJECT_STATUS.md` or `docs/` may exist while developing this repository, but they are not part of the public skill package.
+
 ## Profiles
 
 | Profile | Files | Use when |
@@ -51,6 +59,19 @@ Use [agentmemory](https://github.com/rohitg00/agentmemory) for dynamic memory:
 | `governed` | standard + `docs/ENVIRONMENT.md`, `docs/COORDINATION.md` | Cross-device setup, multiple branches, multiple sessions, or handoff. |
 
 Profiles never upgrade automatically. Diagnosis can recommend an upgrade, but file creation or migration should happen only after developer confirmation.
+
+## Git Tracking Policy
+
+`project-memory` does not decide whether every memory file belongs in git. That is a project policy.
+
+General guidance:
+
+- Commit `AGENTS.md` when the rules should follow the repository across branches, machines, or contributors.
+- Commit `PROJECT_STATUS.md` and `docs/DECISIONS.md` when current state and durable decisions should survive branch switches and cross-device work.
+- Treat `docs/COORDINATION.md`, sparse `docs/LOG.md`, and any dynamic-memory export as project-specific: commit them only when the team wants those facts reviewed, merged, and shared.
+- Never commit secrets, credentials, private tokens, or large raw episodic memory dumps.
+
+Agents should follow the target project's `.gitignore`, repository policy, and developer instructions instead of assuming all generated memory files are either public or private.
 
 ## Install
 
@@ -62,6 +83,8 @@ cp -R skills/project-memory ~/.codex/skills/project-memory
 ```
 
 Restart Codex after installation so the skill can be discovered.
+
+`pyproject.toml` exists for repository metadata and Python development tooling. Installing this repository with pip does not install the Codex skill into `~/.codex/skills/`.
 
 ## Usage
 
@@ -120,6 +143,17 @@ python3 skills/project-memory/scripts/status_sync_proposal.py \
   --agentmemory-summary summary.md
 ```
 
+If a dynamic-memory tool can print a concise project summary, pass it through stdin:
+
+```bash
+your-summary-command | \
+  python3 skills/project-memory/scripts/status_sync_proposal.py \
+    --target /path/to/project \
+    --agentmemory-summary -
+```
+
+The stdin form is the preferred integration point for dynamic-memory tools. `project-memory` intentionally does not hard-code an agentmemory CLI/API until a stable command contract is confirmed.
+
 Generate read-only migration or compaction plans:
 
 ```bash
@@ -135,6 +169,7 @@ python3 skills/project-memory/scripts/compact_memory.py --target /path/to/projec
 - Profile upgrades are recommendations, not automatic mutations.
 - `AGENTS.md` should stay short and should not become a project encyclopedia.
 - `docs/LOG.md` is only a sparse fallback when agentmemory is unavailable.
+- Git tracking for generated memory files is a target-project policy; this skill documents guidance but does not force all memory files into or out of git.
 - In `docs/COORDINATION.md`, agents may update only their own session state unless the developer asks otherwise.
 
 ## Validation
