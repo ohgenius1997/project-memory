@@ -1,56 +1,108 @@
 # project-memory
 
-`project-memory` is a Codex skill for creating a lightweight, AGENTS-first project context router for AI-assisted development.
+AGENTS-first project context router for AI-assisted development.
 
-It follows four constraints:
+`project-memory` keeps the always-on context small. It creates a short
+`AGENTS.md` that tells coding agents what matters, where to read next, and what
+not to load by default.
 
-- little always-on context
-- strong task-based routing
-- weak ceremony
-- dynamic/episodic memory outsourced to agentmemory
+It is designed around one practical split:
 
-It is not an MCP server, vector memory engine, automatic session recorder, or documentation management system.
+- Stable rules and read paths belong in `AGENTS.md`.
+- Current state and durable decisions get a few optional Markdown files.
+- Messy session history belongs in a dynamic memory tool, preferably
+  [agentmemory](https://github.com/rohitg00/agentmemory).
 
-## What It Provides
+The goal is not "more docs". The goal is that a future agent can restart work
+without rereading the whole repository or asking you to repeat the same context.
 
-- Minimal `AGENTS.md` router generation by default
-- Optional `standard` and `governed` profiles for projects that need stable state, decisions, environment, or coordination docs
-- Agent-facing context routing and source-of-truth ownership rules
-- agentmemory collaboration guidance without installing or wrapping agentmemory
-- Read-only profile/context diagnosis
-- Read-only status sync proposals for `PROJECT_STATUS.md`
-- Read-only migration and compaction planners
+## Why This Exists
 
-## Recommended Pairing
+AI coding projects often drift into one of two bad states:
 
-Use `project-memory` for stable project governance:
+- The agent starts every session cold and forgets the project constraints.
+- `AGENTS.md`, `CLAUDE.md`, README, TODOs, logs, and handoff notes become one
+  giant pile of context.
 
-- `AGENTS.md`: always-on routing, stable rules, and AI boundaries
-- `PROJECT_STATUS.md`: current phase, latest conclusion, next step, blockers, risks
-- `docs/DECISIONS.md`: durable decisions and rationale
-- `docs/ENVIRONMENT.md`: stable setup/cross-device facts when needed
-- `docs/COORDINATION.md`: active multi-session or multi-branch coordination when needed
+`project-memory` avoids both by making `AGENTS.md` a router instead of a
+project encyclopedia.
 
-Use [agentmemory](https://github.com/rohitg00/agentmemory) for dynamic memory:
+```text
+AGENTS.md
+  -> stable rules
+  -> task-based read path
+  -> source-of-truth ownership
+  -> dynamic-memory handoff
+```
 
-- attempts
-- failures
-- debugging traces
-- file-level gotchas
-- session continuity
-- episodic recall
+For small projects, that may be the only file you need. For larger projects,
+you can add only the stable files that justify their maintenance cost.
 
-`project-memory` does not install agentmemory. It only writes the routing contract that tells future agents how the two layers should cooperate.
+## The Recommended Stack
 
-## Repository Files vs Generated Files
+Use `project-memory` and `agentmemory` together:
 
-This repository uses `AGENTS.md` for its own contributor/agent instructions.
+| Layer | Tool | What it stores |
+| --- | --- | --- |
+| Always-on router | `project-memory` | `AGENTS.md`: rules, boundaries, task-based read paths |
+| Stable project state | `project-memory` | `PROJECT_STATUS.md`, `docs/DECISIONS.md`, optional environment/coordination docs |
+| Dynamic session memory | `agentmemory` | Attempts, failures, debugging traces, file-level gotchas, session continuity |
 
-The template used for target projects lives at `skills/project-memory/assets/templates/core/AGENTS.md`. When `init_docs.py` initializes another project, it writes that template into the target project's `AGENTS.md`.
+The direct rule is:
 
-Root-level local project-memory files such as `PROJECT_STATUS.md` or `docs/` may exist while developing this repository, but they are not part of the public skill package.
+> Put instructions that should constrain every future agent in `AGENTS.md`.
+> Put experiences that should be remembered but not always loaded in
+> agentmemory.
 
-## Profiles
+`project-memory` does not install agentmemory, run hooks, create an MCP server,
+or wrap a memory runtime. It writes the contract that tells agents how to use
+the project files and agentmemory together.
+
+## How agentmemory Fits
+
+With agentmemory enabled, the intended workflow is simple:
+
+1. At the start of a session, the agent reads `AGENTS.md`.
+2. `AGENTS.md` tells the agent which project files are relevant for the task.
+3. The agent asks agentmemory for related prior work, failures, and file-level
+   warnings.
+4. During implementation, ordinary debugging history stays in agentmemory.
+5. When a conclusion becomes stable, the agent proposes a small update to
+   `PROJECT_STATUS.md` or `docs/DECISIONS.md`.
+
+That keeps permanent project files clean:
+
+| Information | Where it should go |
+| --- | --- |
+| "Never hardcode API keys in frontend code." | `AGENTS.md` |
+| "We use Swift 6.2 and Xcode 26 for this app." | `docs/ENVIRONMENT.md` when governed profile is justified |
+| "The current milestone is palette import QA." | `PROJECT_STATUS.md` |
+| "We chose build123d over Fusion scripts because..." | `docs/DECISIONS.md` |
+| "Tried changing `ColorMatcher.swift`; test X failed because..." | agentmemory |
+| "This file had a weird edge case last session." | agentmemory |
+
+If agentmemory can print a concise project summary, pass it into the status sync
+proposal command:
+
+```bash
+agentmemory-summary-command | \
+  python3 skills/project-memory/scripts/status_sync_proposal.py \
+    --target /path/to/project \
+    --agentmemory-summary -
+```
+
+The command above is intentionally a generic stdin bridge. `project-memory` does
+not hard-code an agentmemory CLI or API until agentmemory has a stable command
+contract that should be depended on.
+
+If you do not use agentmemory, start with `minimal`. Only add `docs/LOG.md` as a
+sparse checkpoint fallback when the project has real long-running state that
+would otherwise be lost.
+
+## What It Generates
+
+`project-memory` has three profiles. It never upgrades a project
+automatically.
 
 | Profile | Files | Use when |
 | --- | --- | --- |
@@ -58,90 +110,34 @@ Root-level local project-memory files such as `PROJECT_STATUS.md` or `docs/` may
 | `standard` | `AGENTS.md`, `PROJECT_STATUS.md`, `docs/DECISIONS.md` | Continuous development needs current state and durable decisions. |
 | `governed` | standard + `docs/ENVIRONMENT.md`, `docs/COORDINATION.md` | Cross-device setup, multiple branches, multiple sessions, or handoff. |
 
-Profiles never upgrade automatically. Diagnosis can recommend an upgrade, but file creation or migration should happen only after developer confirmation.
+The profile choice is about maintenance cost. If a file will not be used to
+route future agents, do not create it yet.
 
-## Git Tracking Policy
+## Quick Start
 
-`project-memory` does not decide whether every memory file belongs in git. That is a project policy.
-
-General guidance:
-
-- Commit `AGENTS.md` when the rules should follow the repository across branches, machines, or contributors.
-- Commit `PROJECT_STATUS.md` and `docs/DECISIONS.md` when current state and durable decisions should survive branch switches and cross-device work.
-- Treat `docs/COORDINATION.md`, sparse `docs/LOG.md`, and any dynamic-memory export as project-specific: commit them only when the team wants those facts reviewed, merged, and shared.
-- Never commit secrets, credentials, private tokens, or large raw episodic memory dumps.
-
-Agents should follow the target project's `.gitignore`, repository policy, and developer instructions instead of assuming all generated memory files are either public or private.
-
-## Install
-
-Copy the skill folder into your Codex skills directory:
+Install the Codex skill:
 
 ```bash
 mkdir -p ~/.codex/skills
 cp -R skills/project-memory ~/.codex/skills/project-memory
 ```
 
-Restart Codex after installation so the skill can be discovered.
+Restart Codex so the skill can be discovered.
 
-`pyproject.toml` exists for repository metadata and Python development tooling. Installing this repository with pip does not install the Codex skill into `~/.codex/skills/`.
-
-## Cross-Agent Use
-
-The skill package itself is for Codex. The files it generates are plain Markdown and can be reused by other coding agents when that tool reads repository instructions.
-
-Practical guidance:
-
-- Keep `AGENTS.md` as the repository source of truth for shared agent rules.
-- If another tool does not read `AGENTS.md`, copy or link the relevant content into that tool's native instruction file.
-- Do not assume Codex skill triggers, hooks, or installation paths exist in Claude Code, Cursor, GitHub Copilot, Windsurf, or other agents.
-- Keep cross-agent instructions short and stable; route detailed state through the project-memory files or the dynamic-memory tool instead of duplicating everything into every agent-specific file.
-
-For Claude Code projects, a common lightweight option is:
-
-```bash
-ln -s AGENTS.md CLAUDE.md
-```
-
-Use a real copy instead of a symlink when the tool, operating system, or repository policy does not handle symlinks well.
-
-## Which Tool Should I Run?
-
-Start with the smallest workflow that matches the project state.
-
-| Situation | Run | Why |
-| --- | --- | --- |
-| New or small project | `init_docs.py --profile minimal` | Create only `AGENTS.md`, the always-on router. |
-| Continuous development needs current state | `init_docs.py --profile standard` | Add `PROJECT_STATUS.md` and durable decisions. |
-| Cross-device, multi-branch, or handoff work | `init_docs.py --profile governed` | Add environment and coordination context. |
-| Existing project, unsure what context exists | `inspect_project.py --target ...` | Inventory likely project-memory, legacy docs, stack, git state, and upgrade signals. |
-| Long `AGENTS.md` or `CLAUDE.md` needs cleanup | `migrate_agents.py --target ...` | Classify what stays in the router versus what should move elsewhere. |
-| Existing README/docs/TODOs/roadmaps need routing | `migrate_context.py --target ...` | Classify old context into status, decisions, environment, coordination, or archive buckets. |
-| Starting a new session or handoff | `brief_memory.py --target ...` | Get a short recommended read path without loading everything. |
-| Before broad implementation or after context drift | `diagnose_memory.py --target ... --context-gate` | Check bloat, missing files, stale status, and profile-upgrade signals. |
-| Current state changed | `status_sync_proposal.py --target ...` | Generate a read-only `PROJECT_STATUS.md` update proposal. |
-| Memory or legacy docs are too long | `compact_memory.py --target ...` | Produce a read-only compaction, migration, and archive review plan. |
-
-Typical flow:
-
-1. New project: initialize the smallest profile, then fill only the stable facts.
-2. Existing project: inspect first, then initialize or migrate only after reviewing the plan.
-3. During development: read `AGENTS.md`, use `brief_memory.py` for the minimal read path, and rely on agentmemory for episodic history.
-4. Before handoff: run diagnosis and status sync proposal, then patch stable state only after confirmation.
-
-## Usage
-
-Initialize the default minimal router:
+Initialize the smallest useful router:
 
 ```bash
 python3 skills/project-memory/scripts/init_docs.py \
   --target /path/to/project \
   --project-name "My Project" \
-  --project-kind "Codex skill" \
-  --domain "agent-facing project context"
+  --project-kind "iOS app" \
+  --domain "pin bead pattern generation"
 ```
 
-Initialize a project that needs stable current state and decisions:
+That creates only `AGENTS.md` by default.
+
+Use `standard` when the project needs stable current state and durable
+decisions:
 
 ```bash
 python3 skills/project-memory/scripts/init_docs.py \
@@ -150,7 +146,8 @@ python3 skills/project-memory/scripts/init_docs.py \
   --project-name "My Project"
 ```
 
-Initialize a governed project:
+Use `governed` only when environment or coordination facts need to survive
+across devices, branches, sessions, or contributors:
 
 ```bash
 python3 skills/project-memory/scripts/init_docs.py \
@@ -158,6 +155,46 @@ python3 skills/project-memory/scripts/init_docs.py \
   --profile governed \
   --project-name "My Project"
 ```
+
+`pyproject.toml` is repository metadata for development and validation. Installing
+this repository with pip does not install the Codex skill into
+`~/.codex/skills/`.
+
+## Which Tool Should I Run?
+
+Start with the smallest workflow that matches the project state.
+
+| Situation | Run | Why |
+| --- | --- | --- |
+| New or small project | `init_docs.py --profile minimal` | Create only `AGENTS.md`, the always-on router. |
+| Continuous development needs current state | `init_docs.py --profile standard` | Add current status and durable decisions. |
+| Cross-device, multi-branch, or handoff work | `init_docs.py --profile governed` | Add environment and coordination context. |
+| Existing project, unsure what context exists | `inspect_project.py --target ...` | Inventory likely project-memory files, legacy docs, stack, git state, and upgrade signals. |
+| Starting a new session or handoff | `brief_memory.py --target ...` | Get a short recommended read path without loading everything. |
+| Before broad implementation or after context drift | `diagnose_memory.py --target ... --context-gate` | Check bloat, missing files, stale status, and profile-upgrade signals. |
+| Current state changed | `status_sync_proposal.py --target ...` | Generate a read-only `PROJECT_STATUS.md` update proposal. |
+| Long `AGENTS.md` or `CLAUDE.md` needs cleanup | `migrate_agents.py --target ...` | Classify what stays in the router versus what should move elsewhere. |
+| Existing README/docs/TODOs/roadmaps need routing | `migrate_context.py --target ...` | Classify old context into status, decisions, environment, coordination, or archive buckets. |
+| Memory or legacy docs are too long | `compact_memory.py --target ...` | Produce a read-only compaction, migration, and archive review plan. |
+
+Typical flow for a new project:
+
+1. Initialize `minimal`.
+2. Add only stable rules and success criteria to `AGENTS.md`.
+3. Use agentmemory for attempts, failures, and session history.
+4. Upgrade to `standard` only when current status or durable decisions are being
+   repeatedly re-explained.
+
+Typical flow for an existing project:
+
+1. Run `inspect_project.py`.
+2. Run migration planners if old context is scattered across README, TODOs,
+   `CLAUDE.md`, or docs.
+3. Review the plan.
+4. Patch only the files that will make future agent sessions shorter and more
+   reliable.
+
+## Usage Examples
 
 Use no dynamic memory and add a sparse checkpoint log fallback:
 
@@ -186,17 +223,6 @@ python3 skills/project-memory/scripts/status_sync_proposal.py \
   --agentmemory-summary summary.md
 ```
 
-If a dynamic-memory tool can print a concise project summary, pass it through stdin:
-
-```bash
-your-summary-command | \
-  python3 skills/project-memory/scripts/status_sync_proposal.py \
-    --target /path/to/project \
-    --agentmemory-summary -
-```
-
-The stdin form is the preferred integration point for dynamic-memory tools. `project-memory` intentionally does not hard-code an agentmemory CLI/API until a stable command contract is confirmed.
-
 Generate read-only migration or compaction plans:
 
 ```bash
@@ -205,7 +231,10 @@ python3 skills/project-memory/scripts/migrate_context.py --target /path/to/proje
 python3 skills/project-memory/scripts/compact_memory.py --target /path/to/project
 ```
 
-`compact_memory.py` does not edit files. It flags oversized project-memory docs, long legacy docs, source-of-truth drift, suggested target files, and the recommended execution order for an agent-assisted cleanup after developer confirmation.
+`compact_memory.py` does not edit files. It flags oversized project-memory docs,
+long legacy docs, source-of-truth drift, suggested target files, and the
+recommended execution order for an agent-assisted cleanup after developer
+confirmation.
 
 ## Safety Model
 
@@ -214,8 +243,70 @@ python3 skills/project-memory/scripts/compact_memory.py --target /path/to/projec
 - Profile upgrades are recommendations, not automatic mutations.
 - `AGENTS.md` should stay short and should not become a project encyclopedia.
 - `docs/LOG.md` is only a sparse fallback when agentmemory is unavailable.
-- Git tracking for generated memory files is a target-project policy; this skill documents guidance but does not force all memory files into or out of git.
-- In `docs/COORDINATION.md`, agents may update only their own session state unless the developer asks otherwise.
+- Git tracking for generated memory files is a target-project policy.
+- In `docs/COORDINATION.md`, agents may update only their own session state
+  unless the developer asks otherwise.
+
+## Git Tracking Policy
+
+`project-memory` does not decide whether every memory file belongs in git. That
+is a project policy.
+
+General guidance:
+
+- Commit `AGENTS.md` when the rules should follow the repository across
+  branches, machines, or contributors.
+- Commit `PROJECT_STATUS.md` and `docs/DECISIONS.md` when current state and
+  durable decisions should survive branch switches and cross-device work.
+- Treat `docs/COORDINATION.md`, sparse `docs/LOG.md`, and any dynamic-memory
+  export as project-specific. Commit them only when the team wants those facts
+  reviewed, merged, and shared.
+- Never commit secrets, credentials, private tokens, or large raw episodic
+  memory dumps.
+
+Agents should follow the target project's `.gitignore`, repository policy, and
+developer instructions instead of assuming all generated memory files are either
+public or private.
+
+## Cross-Agent Use
+
+The skill package itself is for Codex. The files it generates are plain
+Markdown and can be reused by other coding agents when that tool reads
+repository instructions.
+
+Practical guidance:
+
+- Keep `AGENTS.md` as the repository source of truth for shared agent rules.
+- If another tool does not read `AGENTS.md`, copy or link the relevant content
+  into that tool's native instruction file.
+- Do not assume Codex skill triggers, hooks, or installation paths exist in
+  Claude Code, Cursor, GitHub Copilot, Windsurf, or other agents.
+- Keep cross-agent instructions short and stable. Route detailed state through
+  project-memory files or agentmemory instead of duplicating everything into
+  every agent-specific file.
+
+For Claude Code projects, a common lightweight option is:
+
+```bash
+ln -s AGENTS.md CLAUDE.md
+```
+
+Use a real copy instead of a symlink when the tool, operating system, or
+repository policy does not handle symlinks well.
+
+## Repository Files vs Generated Files
+
+This repository uses root `AGENTS.md` for its own contributor/agent
+instructions.
+
+The template used for target projects lives at
+`skills/project-memory/assets/templates/core/AGENTS.md`. When `init_docs.py`
+initializes another project, it writes that template into the target project's
+`AGENTS.md`.
+
+Root-level local project-memory files such as `PROJECT_STATUS.md` or `docs/` may
+exist while developing this repository, but they are not part of the public skill
+package.
 
 ## Validation
 
