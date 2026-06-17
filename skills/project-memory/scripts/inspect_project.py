@@ -6,14 +6,10 @@ from __future__ import annotations
 import argparse
 import json
 import re
-import subprocess
 from pathlib import Path
 from typing import Any
 
-try:
-    import tomllib
-except ModuleNotFoundError:  # pragma: no cover - Python < 3.11 fallback.
-    tomllib = None  # type: ignore[assignment]
+from project_memory_lib import git_lines, git_pointer_issue, safe_read_json, safe_read_text, safe_read_toml
 
 
 INTERESTING_FILES = [
@@ -43,45 +39,15 @@ PROJECT_MEMORY_FILES = {
 
 
 def read_json(path: Path) -> dict[str, Any]:
-    try:
-        return json.loads(path.read_text(encoding="utf-8"))
-    except (FileNotFoundError, json.JSONDecodeError):
-        return {}
+    return safe_read_json(path)
 
 
 def read_toml(path: Path) -> dict[str, Any]:
-    if tomllib is None:
-        return {}
-    try:
-        with path.open("rb") as handle:
-            return tomllib.load(handle)
-    except (FileNotFoundError, tomllib.TOMLDecodeError):
-        return {}
+    return safe_read_toml(path)
 
 
 def read_text(path: Path) -> str:
-    try:
-        return path.read_text(encoding="utf-8")
-    except (FileNotFoundError, UnicodeDecodeError):
-        return ""
-
-
-def git_lines(target: Path, args: list[str]) -> list[str]:
-    try:
-        proc = subprocess.run(
-            ["git", *args],
-            cwd=target,
-            text=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.DEVNULL,
-            check=False,
-            timeout=8,
-        )
-    except (FileNotFoundError, subprocess.TimeoutExpired):
-        return []
-    if proc.returncode != 0:
-        return []
-    return [line.strip() for line in proc.stdout.splitlines() if line.strip()]
+    return safe_read_text(path)
 
 
 def files_matching(target: Path, patterns: list[str]) -> list[str]:
@@ -219,6 +185,10 @@ def project_name(target: Path) -> str:
     match = re.search(r"^-\s*Project:\s*`?([^`\n]+)`?\s*$", status, re.MULTILINE)
     if match:
         return match.group(1).strip()
+    agents = read_text(target / "AGENTS.md")
+    match = re.search(r"^-\s*Name:\s*`?([^`\n]+)`?\s*$", agents, re.MULTILINE)
+    if match:
+        return match.group(1).strip()
     readme = read_text(target / "README.md")
     match = re.search(r"^#\s+(.+)$", readme, re.MULTILINE)
     if match:
@@ -271,6 +241,9 @@ def inspect(target: Path) -> dict[str, object]:
         recommendations.append("Use governed profile if CI/release workflow needs stable environment or coordination notes.")
     if languages:
         recommendations.append("Keep runtime/version facts in AGENTS.md only if short; use governed ENVIRONMENT.md when setup becomes cross-device or fragile.")
+    git_issue = git_pointer_issue(target)
+    if git_issue:
+        recommendations.append("Git metadata looks inconsistent: " + git_issue)
 
     return {
         "target": str(target),
@@ -278,6 +251,7 @@ def inspect(target: Path) -> dict[str, object]:
         "git": {
             "branch": branch_name(target),
             "remotes": git_lines(target, ["remote", "-v"]),
+            "health": "warning: " + git_issue if git_issue else "ok",
         },
         "languages": languages,
         "interesting_files": interesting,
@@ -299,6 +273,7 @@ def print_markdown(result: dict[str, object]) -> None:
     git = result["git"]
     assert isinstance(git, dict)
     print(f"- Git branch: `{git.get('branch') or 'unknown'}`")
+    print(f"- Git health: `{git.get('health') or 'unknown'}`")
     print(f"- Recommended profile: `{result['recommended_profile']}`")
 
     for title, key in [

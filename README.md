@@ -86,6 +86,49 @@ Restart Codex after installation so the skill can be discovered.
 
 `pyproject.toml` exists for repository metadata and Python development tooling. Installing this repository with pip does not install the Codex skill into `~/.codex/skills/`.
 
+## Cross-Agent Use
+
+The skill package itself is for Codex. The files it generates are plain Markdown and can be reused by other coding agents when that tool reads repository instructions.
+
+Practical guidance:
+
+- Keep `AGENTS.md` as the repository source of truth for shared agent rules.
+- If another tool does not read `AGENTS.md`, copy or link the relevant content into that tool's native instruction file.
+- Do not assume Codex skill triggers, hooks, or installation paths exist in Claude Code, Cursor, GitHub Copilot, Windsurf, or other agents.
+- Keep cross-agent instructions short and stable; route detailed state through the project-memory files or the dynamic-memory tool instead of duplicating everything into every agent-specific file.
+
+For Claude Code projects, a common lightweight option is:
+
+```bash
+ln -s AGENTS.md CLAUDE.md
+```
+
+Use a real copy instead of a symlink when the tool, operating system, or repository policy does not handle symlinks well.
+
+## Which Tool Should I Run?
+
+Start with the smallest workflow that matches the project state.
+
+| Situation | Run | Why |
+| --- | --- | --- |
+| New or small project | `init_docs.py --profile minimal` | Create only `AGENTS.md`, the always-on router. |
+| Continuous development needs current state | `init_docs.py --profile standard` | Add `PROJECT_STATUS.md` and durable decisions. |
+| Cross-device, multi-branch, or handoff work | `init_docs.py --profile governed` | Add environment and coordination context. |
+| Existing project, unsure what context exists | `inspect_project.py --target ...` | Inventory likely project-memory, legacy docs, stack, git state, and upgrade signals. |
+| Long `AGENTS.md` or `CLAUDE.md` needs cleanup | `migrate_agents.py --target ...` | Classify what stays in the router versus what should move elsewhere. |
+| Existing README/docs/TODOs/roadmaps need routing | `migrate_context.py --target ...` | Classify old context into status, decisions, environment, coordination, or archive buckets. |
+| Starting a new session or handoff | `brief_memory.py --target ...` | Get a short recommended read path without loading everything. |
+| Before broad implementation or after context drift | `diagnose_memory.py --target ... --context-gate` | Check bloat, missing files, stale status, and profile-upgrade signals. |
+| Current state changed | `status_sync_proposal.py --target ...` | Generate a read-only `PROJECT_STATUS.md` update proposal. |
+| Memory or legacy docs are too long | `compact_memory.py --target ...` | Produce a read-only compaction, migration, and archive review plan. |
+
+Typical flow:
+
+1. New project: initialize the smallest profile, then fill only the stable facts.
+2. Existing project: inspect first, then initialize or migrate only after reviewing the plan.
+3. During development: read `AGENTS.md`, use `brief_memory.py` for the minimal read path, and rely on agentmemory for episodic history.
+4. Before handoff: run diagnosis and status sync proposal, then patch stable state only after confirmation.
+
 ## Usage
 
 Initialize the default minimal router:
@@ -162,6 +205,8 @@ python3 skills/project-memory/scripts/migrate_context.py --target /path/to/proje
 python3 skills/project-memory/scripts/compact_memory.py --target /path/to/project
 ```
 
+`compact_memory.py` does not edit files. It flags oversized project-memory docs, long legacy docs, source-of-truth drift, suggested target files, and the recommended execution order for an agent-assisted cleanup after developer confirmation.
+
 ## Safety Model
 
 - `init_docs.py` does not overwrite existing files unless `--force` is used.
@@ -178,8 +223,16 @@ Run script syntax checks:
 
 ```bash
 PYTHONPYCACHEPREFIX=/tmp/project-memory-pycache \
-python3 -m py_compile skills/project-memory/scripts/*.py
+python3 -m compileall -q skills/project-memory/scripts tests
 ```
+
+Run behavior tests:
+
+```bash
+python3 -m unittest discover -s tests
+```
+
+GitHub Actions runs these checks on Linux, macOS, and Windows.
 
 Run smoke checks:
 

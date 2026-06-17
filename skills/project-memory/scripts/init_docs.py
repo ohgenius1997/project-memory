@@ -313,6 +313,9 @@ def main() -> int:
         return 2
 
     target = Path(args.target).expanduser().resolve()
+    if target.exists() and not target.is_dir():
+        print(f"Target exists but is not a directory: {target}", file=sys.stderr)
+        return 2
     project_name = args.project_name.strip() or target.name
     project_kind = args.project_kind.strip() or "software project"
     domain = args.domain.strip() or "unspecified"
@@ -351,14 +354,18 @@ def main() -> int:
     if args.fallback_log or (dynamic_memory == "none" and profile in {"standard", "governed"}):
         core_include.add("docs/LOG.md")
 
-    created, skipped = copy_templates(
-        CORE_TEMPLATE,
-        target,
-        variables,
-        force=args.force,
-        dry_run=args.dry_run,
-        include=core_include,
-    )
+    try:
+        created, skipped = copy_templates(
+            CORE_TEMPLATE,
+            target,
+            variables,
+            force=args.force,
+            dry_run=args.dry_run,
+            include=core_include,
+        )
+    except OSError as exc:
+        print(f"Failed to write project-memory files under {target}: {exc}", file=sys.stderr)
+        return 1
     all_created.extend(created)
     all_skipped.extend(skipped)
 
@@ -367,9 +374,13 @@ def main() -> int:
         if not addon_dir.exists():
             print(f"Missing addon template directory: {addon_dir}", file=sys.stderr)
             return 2
-        created, skipped = copy_templates(
-            addon_dir, target, variables, force=args.force, dry_run=args.dry_run
-        )
+        try:
+            created, skipped = copy_templates(
+                addon_dir, target, variables, force=args.force, dry_run=args.dry_run
+            )
+        except OSError as exc:
+            print(f"Failed to write addon `{addon}` under {target}: {exc}", file=sys.stderr)
+            return 1
         all_created.extend(created)
         all_skipped.extend(skipped)
 

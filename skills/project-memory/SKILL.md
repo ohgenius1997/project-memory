@@ -129,7 +129,7 @@ Use read-only planners first.
 
 - `scripts/migrate_agents.py`: classify long `AGENTS.md` content into keep/move/review buckets.
 - `scripts/migrate_context.py`: classify README, CLAUDE.md, old docs, TODOs, roadmaps, and handoff notes.
-- `scripts/compact_memory.py`: propose compaction; never compact automatically.
+- `scripts/compact_memory.py`: propose compaction, migration, and archive review plans for project-memory and legacy docs; never compact automatically.
 
 Migration target:
 - keep `AGENTS.md` short as the router

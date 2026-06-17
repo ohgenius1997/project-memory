@@ -8,9 +8,10 @@ import datetime as dt
 import json
 import re
 import shutil
-import subprocess
 from dataclasses import asdict, dataclass
 from pathlib import Path
+
+from project_memory_lib import git_lines, git_pointer_issue, safe_read_text
 
 
 PROFILE_FILES = {
@@ -94,27 +95,7 @@ class Finding:
 
 
 def read(path: Path) -> str:
-    try:
-        return path.read_text(encoding="utf-8")
-    except FileNotFoundError:
-        return ""
-
-
-def git_lines(target: Path, args: list[str]) -> list[str]:
-    try:
-        proc = subprocess.run(
-            ["git", *args],
-            cwd=target,
-            text=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.DEVNULL,
-            check=False,
-        )
-    except FileNotFoundError:
-        return []
-    if proc.returncode != 0:
-        return []
-    return [line.strip() for line in proc.stdout.splitlines() if line.strip()]
+    return safe_read_text(path)
 
 
 def git_date_for_path(target: Path, relative: str) -> dt.date | None:
@@ -308,6 +289,38 @@ def tracked_dependency_files(target: Path) -> list[str]:
 
 def diagnose(target: Path, *, context_gate: bool = False) -> list[Finding]:
     findings: list[Finding] = []
+
+    if target.exists() and not target.is_dir():
+        add(
+            findings,
+            "error",
+            "target-not-directory",
+            str(target),
+            "Target path exists but is not a directory.",
+            "Pass a project directory as --target.",
+        )
+        return findings
+    if not target.exists():
+        add(
+            findings,
+            "error",
+            "target-missing",
+            str(target),
+            "Target directory does not exist.",
+            "Create the project directory first, or pass the correct --target path.",
+        )
+        return findings
+
+    git_issue = git_pointer_issue(target)
+    if git_issue:
+        add(
+            findings,
+            "warning",
+            "git-pointer-invalid",
+            ".git",
+            git_issue,
+            "Treat this as a copied or renamed worktree until repaired or detached; avoid destructive git actions in this folder.",
+        )
     over_budget = False
     profile = detect_profile(target)
     dynamic_memory = dynamic_memory_mode(target)
